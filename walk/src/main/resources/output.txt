@@ -1,0 +1,6 @@
+f9f9db80 C:\university\java\walk\src\main\resources\samples\binary
+00000031 C:\university\java\walk\src\main\resources\samples\inside\1
+347951f0 C:\university\java\walk\src\main\resources\samples\123
+f9f9db80 C:\university\java\walk\src\main\resources\samples\inside\binary
+00000031 C:\university\java\walk\src\main\resources\samples\1
+347951f0 C:\university\java\walk\src\main\resources\samples\inside\123
