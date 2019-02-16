@@ -12,15 +12,18 @@ public class RecursiveWalk {
     public static String inputFileName = "C:\\university\\java\\walk\\src\\main\\resources\\input.txt";
     public static String outputFileName = "C:\\university\\java\\walk\\src\\main\\resources\\output.txt";
 
+    // Stupid test
     public static void main(String[] args) {
         RecursiveWalk recursiveWalk = new RecursiveWalk();
         // recursiveWalk.run(args[0], args[1]);
         recursiveWalk.run(inputFileName, outputFileName);
     }
 
+    // Runner
     public void run(String input, String output) {
         List<String> files;
         List<Map> result = new ArrayList<>();
+
         try {
             files = readFileNames(input);
         } catch (FileNotFoundException e) {
@@ -48,6 +51,7 @@ public class RecursiveWalk {
         }
     }
 
+    // Help method to read file names fro 'path'
     public List<String> readFileNames(String path) throws FileNotFoundException {
         Scanner scanner = new Scanner(new File(path));
         ArrayList<String> list = new ArrayList<>();
@@ -58,10 +62,12 @@ public class RecursiveWalk {
         return list;
     }
 
+    // Help method to print result when it's presented as list of String -> String maps
     public void printResult(String path, List<Map> result) throws FileNotFoundException {
         PrintWriter writer = new PrintWriter(path);
         result.forEach(map -> map.forEach(
                 (file, fnvHash) -> {
+                    // Format to hexadecimal 8-digit string
                     String hex = String.format("%08x", (Integer)fnvHash);
                     writer.println(hex + " " + file);
                 }
