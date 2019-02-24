@@ -1,3 +1,5 @@
+package model;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
@@ -10,6 +12,7 @@ import java.util.Map;
 public class FeedModel {
 
     public static String FEED_ITEM = "item";
+    public static String FEED_CHANNEL ="channel";
 
     public Map<String, String> metaSource;
     public List<Map<String, String>> itemSources;

@@ -1,3 +1,5 @@
+package config;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,20 +33,20 @@ public class RSSConfiguration {
     private static String FEED_LINK = "link";
     private static String FEED_DESCRIPTION = "description";
     private static String FEED_LANGUAGE = "language";
-    private static String FEED_COPYRIGHT = "language";
-    private static String FEED_MANAGING_EDITOR = "language";
-    private static String FEED_WEB_MASTER = "language";
-    private static String FEED_PUB_DATE = "language";
-    private static String FEED_LAST_BUILD_DATE = "language";
-    private static String FEED_CATEGORY = "language";
-    private static String FEED_GENERATOR = "language";
-    private static String FEED_DOCS = "language";
-    private static String FEED_CLOUD = "language";
-    private static String FEED_TTL = "language";
-    private static String FEED_RATING = "language";
-    private static String FEED_TEXT_INPUT = "language";
-    private static String FEED_SKIP_HOURS = "language";
-    private static String FEED_SKIP_DAYS = "language";
+    private static String FEED_COPYRIGHT = "copyright";
+    private static String FEED_MANAGING_EDITOR = "managingEditor";
+    private static String FEED_WEB_MASTER = "webMaster";
+    private static String FEED_PUB_DATE = "pubDate";
+    private static String FEED_LAST_BUILD_DATE = "lastBuildDate";
+    private static String FEED_CATEGORY = "category";
+    private static String FEED_GENERATOR = "generator";
+    private static String FEED_DOCS = "docs";
+    private static String FEED_CLOUD = "cloud";
+    private static String FEED_TTL = "ttl";
+    private static String FEED_RATING = "rating";
+    private static String FEED_TEXT_INPUT = "textInput";
+    private static String FEED_SKIP_HOURS = "skipHours";
+    private static String FEED_SKIP_DAYS = "skipDays";
 
     private static List<String> availableFeedFields = Arrays.asList(
             FEED_TITLE, FEED_LINK, FEED_DESCRIPTION, FEED_LANGUAGE, FEED_COPYRIGHT, FEED_MANAGING_EDITOR,
@@ -59,6 +61,14 @@ public class RSSConfiguration {
     private RSSConfiguration() {
         itemFields = new ArrayList<>();
         feedFields = new ArrayList<>();
+    }
+
+    public static List<String> getAvailableFeedFields() {
+        return availableFeedFields;
+    }
+
+    public static List<String> getAvailableItemFields() {
+        return availableItemFields;
     }
 
     public List<String> getItemFields() {
