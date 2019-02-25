@@ -15,6 +15,11 @@ class RSSItemParser {
             while (eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();
                 if (event.isStartElement()) {
+                    String prefix = event.asStartElement().getName().getPrefix();
+                    if (prefix.equals("atom")) {
+                        // ignore atom fields for now
+                        continue;
+                    }
                     String localPart = event.asStartElement().getName().getLocalPart();
                     model.put(localPart.toLowerCase(), FeedModel.getCharacterData(eventReader));
                 } else if (event.isEndElement()) {
