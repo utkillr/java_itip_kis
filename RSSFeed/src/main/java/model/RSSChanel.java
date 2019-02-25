@@ -2,19 +2,12 @@ package model;
 
 import config.RSSConfiguration;
 
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RSSFeed {
+public class RSSChanel {
     /**
      * This class represents RSS feed (not Atom one).
      * Includes default fields which are unable to be removed
@@ -33,7 +26,7 @@ public class RSSFeed {
         return items;
     }
 
-    public RSSFeed(RSSConfiguration configuration, FeedModel model) {
+    public RSSChanel(RSSConfiguration configuration, FeedModel model) {
         this.metaBody = new HashMap<>();
         this.configuration = configuration;
         model.metaSource.forEach((key, value) -> {

@@ -86,7 +86,16 @@ public class RSSConfiguration {
     }
 
     public void reconfig(List<String> itemFields, List<String> feedFields) {
-        this.itemFields = itemFields.stream().filter(availableItemFields::contains).collect(Collectors.toList());
-        this.feedFields = feedFields.stream().filter(availableFeedFields::contains).collect(Collectors.toList());
+        if(itemFields.size() > 0){
+            this.itemFields = itemFields.stream()
+                    .filter(availableItemFields::contains)
+                    .collect(Collectors.toList());
+        }
+
+        if(feedFields.size() > 0){
+            this.feedFields = feedFields.stream()
+                    .filter(availableFeedFields::contains)
+                    .collect(Collectors.toList());
+        }
     }
 }
