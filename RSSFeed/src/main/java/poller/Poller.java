@@ -21,11 +21,26 @@ import java.util.stream.Collectors;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 
+/**
+ * Runnable class to poll RSS Feeds and write them to associated files
+ * with provided polling time
+ */
 public class Poller implements Runnable {
 
-    private static boolean running = false;
+    /**
+     * Time to sleep between checks for time to poll modifications
+     */
     private static long timeCheckThreshold = 5;
 
+    private boolean running;
+
+    /**
+     * Polling function.
+     * Actually, iterates over all the feeds which are turned on and prints them to file.
+     * Also notifies configurator about new pubDate
+     *
+     * @param configuration instance of RSSConfiguration
+     */
     public static void poll(RSSConfiguration configuration) {
         configuration.getRSSFeeds().forEach((feed, file) -> {
             if (configuration.isRSSFeedOn(feed)) {
@@ -36,10 +51,14 @@ public class Poller implements Runnable {
     }
 
     /**
-     * Print rss to the provided file
+     * Print RSS Feed to the file.
+     * In case pubDates are available, filter RSS Items to be newer than latestPubDate.
+     * In case no new items arrived, do not write anything.
      *
      * @param link rss feed link
      * @param file file name
+     * @param fromPubDate can be null - pubDate to sort items
+     * @return updated latestPubDate
      */
     public static Date printRSSFeedToFile(String link, String file, Date fromPubDate) {
         try {
@@ -77,6 +96,14 @@ public class Poller implements Runnable {
         return null;
     }
 
+    /**
+     * Helper method for getting user-friendly string from channel or item properties map
+     *
+     * @param map properties map
+     * @param availableKeys keys to include
+     * @param initialIndent initial indent for all the lines
+     * @return User-friendly string ready for output
+     */
     private static String getStringFromMap(Map<String, String> map, List<String> availableKeys, int initialIndent) {
         StringBuilder indentation = new StringBuilder();
         for (int i = 0; i < initialIndent; i++) {
@@ -91,6 +118,10 @@ public class Poller implements Runnable {
                 .collect(Collectors.joining()) + "\n";
     }
 
+    /**
+     * Overriding of Runnable.run.
+     * Unless stop() is not called, poll and sleep in loop
+     */
     @Override
     public void run() {
         running = true;
@@ -105,10 +136,22 @@ public class Poller implements Runnable {
         }
     }
 
+    /**
+     * Set 'running' to false which causes stopping of run() loop
+     */
     public void stop() {
         running = false;
     }
 
+    /**
+     * Special sleep method which allows to modify and reapply configured time to poll.
+     * Check if time to poll is changed every @timeCheckThreshold seconds.
+     * If it's changed, reapply it locally and restart sleeping cycle.
+     * In case of stop() has been called , stop sleeping on next waking up.
+     *
+     * @param configuration instance of RSSConfiguration
+     * @throws InterruptedException in case of interrupted sleep
+     */
     private void sleep(RSSConfiguration configuration) throws InterruptedException {
         long currentTimeToPoll = configuration.getTimeToPoll();
         long leftTimeToPoll = currentTimeToPoll;

@@ -5,33 +5,54 @@ import config.RSSConfiguration;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This class represents RSS Channel (Atom syntax is ignored for now).
+ */
 public class RSSChannel {
-    /**
-     * This class represents RSS Channel (not Atom one).
-     * Includes default fields which are unable to be removed
-     */
-
-    private RSSConfiguration configuration;
 
     private Map<String, String> metaBody;
     private List<RSSItem> items;
     private Date latestPubDate;
 
+    /**
+     * Get properties of RSS Channel
+     *
+     * @return map: Configured property -> value
+     */
     public Map<String, String> getMetaBody() {
         return metaBody;
     }
 
+    /**
+     * Get list of items inside of channel
+     *
+     * @return list of items
+     */
     public List<RSSItem> getItems() {
         return items;
     }
 
+    /**
+     * Get latest pub date, which is assigned in constructor.
+     * Actually, the latest pubDate of items
+     *
+     * @return latest pubDate
+     */
     public Date getLatestPubDate() {
         return latestPubDate;
     }
 
+    /**
+     * Setup configured channel fields
+     * Setup items which are newer than latestPubDate
+     * Update latestPubDate
+     *
+     * @param configuration RSSConfiguration instance
+     * @param model parsed FeedModel
+     * @param latestPubDate can be null - needed for filtering old items
+     */
     public RSSChannel(RSSConfiguration configuration, FeedModel model, final Date latestPubDate) {
         this.metaBody = new HashMap<>();
-        this.configuration = configuration;
         model.metaSource.forEach((key, value) -> {
             if (configuration.getChannelFields().contains(key)) {
                 metaBody.put(key, value);

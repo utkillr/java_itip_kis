@@ -2,9 +2,20 @@ package cli;
 
 import java.util.*;
 
+/**
+ * Parser for CLI Wrapper
+ */
 public class CommandLineParser {
     private CommandLineManager manager = new CommandLineManager();
 
+    /**
+     * Parse input command (cli wrapper)
+     *
+     * @param inputString full command containing of command and its parameters
+     * @return execution status:
+     *      0 means no errors
+     *      1 means graceful exit
+     */
     public int parse(String inputString) {
         manager.init();
 

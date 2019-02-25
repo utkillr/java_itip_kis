@@ -8,7 +8,16 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
 
+/**
+ * This class implements global parsing to throw away all the data besides "channel" tag
+ */
 public class FeedModelParser {
+    /**
+     * Iterate over XML until it's "channel" tag. Then call parser for RSSChannel
+     *
+     * @param in InputStream with XML
+     * @return model which is returned from RSSChannelParser
+     */
     public FeedModel parse(InputStream in) {
         FeedModel model = null;
         try {

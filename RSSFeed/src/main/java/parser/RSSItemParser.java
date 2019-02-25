@@ -8,7 +8,19 @@ import javax.xml.stream.events.XMLEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class implements parsing for item properties
+ */
 class RSSItemParser {
+    /**
+     * Iterate over XML and write item properties.
+     * Finish on closing the item tag
+     *
+     * Note: This parser is waiting for eventReader to be pointed after item tag is opened
+     *
+     * @param eventReader XMLEventReader pointing right after item tag opening
+     * @return map: ItemProperty -> value
+     */
     Map<String, String> parse(XMLEventReader eventReader) {
         Map<String, String> model = new HashMap<>();
         try {

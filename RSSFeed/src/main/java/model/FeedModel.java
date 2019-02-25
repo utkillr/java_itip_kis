@@ -9,6 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class implements our model of RSS Feed which is actually
+ * Channel description source (metaSource) + item description sources (itemSources)
+ */
 public class FeedModel {
 
     public static String FEED_ITEM = "item";
@@ -22,6 +26,13 @@ public class FeedModel {
         itemSources = new ArrayList<>();
     }
 
+    /**
+     * Gets character data inside of xml tag via event reader
+     *
+     * @param eventReader active XMLEventReader pointing on on event to be read
+     * @return String representation of tag insides
+     * @throws XMLStreamException in case of issues with event reading
+     */
     public static String getCharacterData(XMLEventReader eventReader) throws XMLStreamException {
         String result = "";
         XMLEvent event = eventReader.nextEvent();

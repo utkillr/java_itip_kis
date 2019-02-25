@@ -6,8 +6,20 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
+/**
+ * This class implements parsing for channel properties and items
+ */
 class RSSChannelParser {
-    // Waiting for <channel> ... </channel> XML
+    /**
+     * Iterate over XML and write channel properties until it's "item" tag.
+     * Then call parser for RSSItem (in loop)
+     * Finish on closing the channel tag
+     *
+     * Note: This parser is waiting for eventReader to be pointed after channel tag is opened
+     *
+     * @param eventReader XMLEventReader pointing right after channel tag opening
+     * @return parsed FeedModel
+     */
     FeedModel parse(XMLEventReader eventReader) {
         FeedModel model = new FeedModel();
         try {

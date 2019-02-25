@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementation of CLI
+ */
 public class CommandLineManager {
 
     /**

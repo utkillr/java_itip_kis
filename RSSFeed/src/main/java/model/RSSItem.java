@@ -3,33 +3,46 @@ package model;
 import config.RSSConfiguration;
 import util.PubDateParser;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class represents RSS Channel (Atom syntax is ignored for now).
+ */
 public class RSSItem {
-    /**
-     * This class represents Item of RSS feed (not Atom one).
-     * Includes default fields which are unable to be removed
-     */
-
-    private RSSConfiguration configuration;
 
     private Map<String, String> body;
     private Date latestPubDate;
 
+    /**
+     * Get properties of RSS Item
+     *
+     * @return map: Configured property -> value
+     */
     public Map<String, String> getBody() {
         return body;
     }
 
-    public Date getLatestPubDate() {
+    /**
+     * Get parsed pubDate, which is assigned in constructor.
+     * Field is called latestPubDate for confuse decreasing - the same name is used in RSSChannel
+     *
+     * @return pubDate
+     */
+    Date getLatestPubDate() {
         return latestPubDate;
     }
 
-    public RSSItem(RSSConfiguration configuration, Map<String, String> source) {
+    /**
+     * Setup configured item fields
+     * Parse latestPubDate
+     *
+     * @param configuration RSSConfiguration instance
+     * @param source parsed Map from FeedModel
+     */
+    RSSItem(RSSConfiguration configuration, Map<String, String> source) {
         this.body = new HashMap<>();
-        this.configuration = configuration;
         source.forEach((key, value) -> {
             if (configuration.getItemFields().contains(key)) {
                 body.put(key, value);

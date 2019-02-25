@@ -1,18 +1,17 @@
 package config;
 
-import model.RSSChannel;
-import util.PubDateParser;
-
 import java.security.InvalidParameterException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Configuration singleton for RSS Feed, Items and whole application
+ */
 public class RSSConfiguration {
-    /**
-     * This class provides configuration for RSS feed and its items
-     */
 
+    /**
+     * Singleton field
+     */
     private static final RSSConfiguration configuration = new RSSConfiguration();
 
     private static String ITEM_TITLE = "title";
@@ -79,31 +78,62 @@ public class RSSConfiguration {
         RSSFeedStatus = new HashMap<>();
     }
 
+    /**
+     * Get all the available channel fields
+     *
+     * @return unmodifiable list of available channel fields
+     */
     public static List<String> getAvailableChannelFields() {
-        return availableChannelFields;
+        return Collections.unmodifiableList(availableChannelFields);
     }
 
+    /**
+     * Get all the available item fields
+     *
+     * @return unmodifiable list of available item fields
+     */
     public static List<String> getAvailableItemFields() {
-        return availableItemFields;
+        return Collections.unmodifiableList(availableItemFields);
     }
 
+    /**
+     * Get configured item fields
+     *
+     * @return unmodifiable list of configured item fields
+     */
     public List<String> getItemFields() {
-        // Call new to avoid external modification
-        return new ArrayList<>(itemFields);
+        return Collections.unmodifiableList(itemFields);
     }
 
+    /**
+     * Get configured channel fields
+     *
+     * @return unmodifiable list of configured channel fields
+     */
     public List<String> getChannelFields() {
-        // Call new to avoid external modification
-        return new ArrayList<>(channelFields);
+        return Collections.unmodifiableList(channelFields);
     }
 
+    /**
+     * Get singleton configuration instance
+     *
+     * @return configuration instance
+     */
     public static RSSConfiguration getInstance() {
         return configuration;
     }
 
+    /**
+     * Reconfig fields of items and channel.
+     * Waits for lists which are not handled in case of they are empty
+     * Unavailable fields are ignored
+     *
+     * @param itemFields item fields to be configured
+     * @param channelFields channel fields to be configured
+     */
     public void reconfig(List<String> itemFields, List<String> channelFields) {
 
-        if(itemFields.size() > 0){
+        if(itemFields != null && itemFields.size() > 0){
             this.itemFields = itemFields
                     .stream()
                     .map(String::toLowerCase)
@@ -111,7 +141,7 @@ public class RSSConfiguration {
                     .collect(Collectors.toList());
         }
 
-        if(channelFields.size() > 0){
+        if(channelFields != null && channelFields.size() > 0){
             this.channelFields = channelFields
                     .stream()
                     .map(String::toLowerCase)
@@ -120,14 +150,31 @@ public class RSSConfiguration {
         }
     }
 
+    /**
+     * Set time to poll
+     *
+     * @param time new time to poll
+     */
     public void setTimeToPoll(Long time) {
         this.timeToPoll = time;
     }
 
+    /**
+     * Get time to poll
+     *
+     * @return current time to poll
+     */
     public Long getTimeToPoll() {
         return timeToPoll;
     }
 
+    /**
+     * Add new RSS Feed to application
+     * If it already in, Exception is raised
+     *
+     * @param feed link to RSS Feed
+     * @param file full path to file to associate with feed
+     */
     public void addRSSFeed(String feed, String file) {
         if (!RSSFeeds.containsKey(feed)) {
             RSSFeeds.put(feed, file);
@@ -137,6 +184,21 @@ public class RSSConfiguration {
         }
     }
 
+    /**
+     * Remove RSS Feed from application
+     *
+     * @param feed link to RSS Feed
+     */
+    public void delRSSFeed(String feed) {
+        RSSFeeds.remove(feed);
+    }
+
+    /**
+     * Turn RSS Feed on
+     * If Feed is not in, Exception is raised
+     *
+     * @param feed link to RSS Feed
+     */
     public void turnOnRSSFeed(String feed) {
         if (RSSFeeds.containsKey(feed)) {
             RSSFeedStatus.get(feed).status = FeedStatus.ON;
@@ -145,6 +207,12 @@ public class RSSConfiguration {
         }
     }
 
+    /**
+     * Turn RSS Feed off without removal
+     * If Feed is not in, Exception is raised
+     *
+     * @param feed link to RSS Feed
+     */
     public void turnOffRSSFeed(String feed) {
         if (RSSFeeds.containsKey(feed)) {
             RSSFeedStatus.get(feed).status = FeedStatus.OFF;
@@ -153,6 +221,13 @@ public class RSSConfiguration {
         }
     }
 
+    /**
+     * Check if RSS Feed is on
+     * If Feed is not in, Exception is raised
+     *
+     * @param feed link to RSS Feed
+     * @return true if Feed is on, else false
+     */
     public boolean isRSSFeedOn(String feed) {
         if (RSSFeeds.containsKey(feed)) {
             return RSSFeedStatus.get(feed).status == FeedStatus.ON;
@@ -161,6 +236,13 @@ public class RSSConfiguration {
         }
     }
 
+    /**
+     * Get last read pubDate of RSS Feed
+     * If Feed is not in, Exception is raised
+     *
+     * @param feed link to RSS Feed
+     * @return latest pubDate of feed
+     */
     public Date getRSSFeedLastPubDate(String feed) {
         if (RSSFeeds.containsKey(feed)) {
             return RSSFeedStatus.get(feed).lastPubDate;
@@ -169,17 +251,29 @@ public class RSSConfiguration {
         }
     }
 
+    /**
+     * Set RSS Feed last pubDate to new one
+     * If Feed is not in, Exception is raised
+     *
+     * @param feed link to RSS Feed
+     * @param lastPubDate new pubDate
+     */
     public void notifyFeedRead(String feed, Date lastPubDate) {
-        if (lastPubDate != null) {
-            RSSFeedStatus.get(feed).lastPubDate = lastPubDate;
+        if (RSSFeeds.containsKey(feed)) {
+            if (lastPubDate != null) {
+                RSSFeedStatus.get(feed).lastPubDate = lastPubDate;
+            }
+        } else {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
         }
     }
 
-    public void delRSSFeed(String feed) {
-        RSSFeeds.remove(feed);
-    }
-
+    /**
+     * Get all the RSS Feeds with its associated files
+     *
+     * @return unmodifiable map: feed -> file
+     */
     public Map<String, String> getRSSFeeds() {
-        return new HashMap<>(RSSFeeds);
+        return Collections.unmodifiableMap(RSSFeeds);
     }
 }
