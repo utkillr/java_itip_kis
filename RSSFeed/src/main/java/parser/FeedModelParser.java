@@ -20,8 +20,8 @@ public class FeedModelParser {
                     String localPart = event.asStartElement().getName().getLocalPart();
                     if (localPart.equals(FeedModel.FEED_CHANNEL)) {
                         // Move inside of <channel>
-                        eventReader.nextEvent();
-                        model = new RSSFeedParser().parse(eventReader);
+                        // eventReader.nextEvent();
+                        model = new RSSChannelParser().parse(eventReader);
                     }
                 }
             }

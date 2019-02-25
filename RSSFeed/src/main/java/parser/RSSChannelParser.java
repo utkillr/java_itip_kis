@@ -6,14 +6,19 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
-public class RSSFeedParser {
-    // Waiting for <channel> ... </channel> XMl
-    public FeedModel parse(XMLEventReader eventReader) {
+class RSSChannelParser {
+    // Waiting for <channel> ... </channel> XML
+    FeedModel parse(XMLEventReader eventReader) {
         FeedModel model = new FeedModel();
         try {
             while (eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();
                 if (event.isStartElement()) {
+                    String prefix = event.asStartElement().getName().getPrefix();
+                    if (prefix.equals("atom")) {
+                        // ignore atom fields for now
+                        continue;
+                    }
                     String localPart = event.asStartElement().getName().getLocalPart();
                     // in case of it is <item>
                     if (localPart.equals(FeedModel.FEED_ITEM)) {
@@ -21,7 +26,7 @@ public class RSSFeedParser {
                         eventReader.nextEvent();
                         model.itemSources.add(new RSSItemParser().parse(eventReader));
                     } else {
-                        model.metaSource.put(localPart, FeedModel.getCharacterData(event, eventReader));
+                        model.metaSource.put(localPart.toLowerCase(), FeedModel.getCharacterData(eventReader));
                     }
                 } else if (event.isEndElement()){
                     String localPart = event.asEndElement().getName().getLocalPart();

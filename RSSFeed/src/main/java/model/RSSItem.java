@@ -1,7 +1,10 @@
 package model;
 
 import config.RSSConfiguration;
+import util.PubDateParser;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,9 +17,14 @@ public class RSSItem {
     private RSSConfiguration configuration;
 
     private Map<String, String> body;
+    private Date latestPubDate;
 
     public Map<String, String> getBody() {
         return body;
+    }
+
+    public Date getLatestPubDate() {
+        return latestPubDate;
     }
 
     public RSSItem(RSSConfiguration configuration, Map<String, String> source) {
@@ -27,5 +35,10 @@ public class RSSItem {
                 body.put(key, value);
             }
         });
+        if (source.containsKey("pubDate".toLowerCase())) {
+            latestPubDate = PubDateParser.parse(source.get("pubDate".toLowerCase()));
+        } else {
+            latestPubDate = null;
+        }
     }
 }

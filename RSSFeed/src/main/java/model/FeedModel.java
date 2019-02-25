@@ -22,9 +22,9 @@ public class FeedModel {
         itemSources = new ArrayList<>();
     }
 
-    public static String getCharacterData(XMLEvent event, XMLEventReader eventReader) throws XMLStreamException {
+    public static String getCharacterData(XMLEventReader eventReader) throws XMLStreamException {
         String result = "";
-        event = eventReader.nextEvent();
+        XMLEvent event = eventReader.nextEvent();
         if (event instanceof Characters) {
             result = event.asCharacters().getData();
         }
