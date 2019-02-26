@@ -7,7 +7,6 @@ import java.io.InvalidObjectException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * This class represents RSS Channel (Atom syntax is ignored for now).
@@ -45,8 +44,8 @@ public class RSSItem {
      * @param source parsed Map from FeedModel
      */
     RSSItem(RSSConfiguration configuration, String feed, Map<String, String> source) throws InvalidObjectException {
-        if (! source.keySet().containsAll(RSSConfiguration.getMandatoryRawItemFields())) {
-            throw new InvalidObjectException("RSS Channel does not contains all the mandatory fields");
+        if (! source.keySet().containsAll(RSSConfiguration.getRawMandatoryItemFields())) {
+            throw new InvalidObjectException("RSS Item does not contains all the mandatory fields");
         }
         this.body = new HashMap<>();
         source.forEach((key, value) -> {
@@ -54,6 +53,9 @@ public class RSSItem {
                 body.put(key, value);
             }
         });
+        if (source.get("pubDate".toLowerCase()) == null) {
+            throw new InvalidObjectException("RSS Item has PubDate set to null");
+        }
         latestPubDate = PubDateParser.parse(source.get("pubDate".toLowerCase()));
     }
 }

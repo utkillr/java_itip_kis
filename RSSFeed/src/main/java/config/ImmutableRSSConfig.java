@@ -25,7 +25,10 @@ class ImmutableRSSConfig {
             .map(String::toLowerCase)
             .collect(Collectors.toList());
     static List<String> defaultRawAvailableItemFields = Arrays.asList(ITEM_TITLE, ITEM_DESCRIPTION);
-    static List<String> mandatoryRawItemFields = Arrays.asList(ITEM_TITLE, ITEM_PUB_DATE);
+    static List<String> rawMandatoryItemFields = Arrays.asList(ITEM_TITLE, ITEM_PUB_DATE)
+            .stream()
+            .map(String::toLowerCase)
+            .collect(Collectors.toList());
 
     private static String CHANNEL_TITLE = "title";
     private static String CHANNEL_LINK = "link";
@@ -56,5 +59,8 @@ class ImmutableRSSConfig {
             .map(String::toLowerCase)
             .collect(Collectors.toList());
     static List<String> defaultRawAvailableChannelFields = Arrays.asList(CHANNEL_TITLE, CHANNEL_DESCRIPTION);
-    static List<String> mandatoryRawChannelFields = Arrays.asList(CHANNEL_TITLE);
+    static List<String> rawMandatoryChannelFields = Arrays.asList(CHANNEL_TITLE)
+            .stream()
+            .map(String::toLowerCase)
+            .collect(Collectors.toList());
 }

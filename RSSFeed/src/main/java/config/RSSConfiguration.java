@@ -35,8 +35,8 @@ public class RSSConfiguration {
      *
      * @return unmodifiable list of mandatory channel fields
      */
-    public static List<String> getMandatoryRawChannelFields() {
-        return Collections.unmodifiableList(ImmutableRSSConfig.mandatoryRawChannelFields);
+    public static List<String> getRawMandatoryChannelFields() {
+        return Collections.unmodifiableList(ImmutableRSSConfig.rawMandatoryChannelFields);
     }
 
     /**
@@ -44,8 +44,8 @@ public class RSSConfiguration {
      *
      * @return unmodifiable list of mandatory item fields
      */
-    public static List<String> getMandatoryRawItemFields() {
-        return Collections.unmodifiableList(ImmutableRSSConfig.mandatoryRawItemFields);
+    public static List<String> getRawMandatoryItemFields() {
+        return Collections.unmodifiableList(ImmutableRSSConfig.rawMandatoryItemFields);
     }
 
     /**

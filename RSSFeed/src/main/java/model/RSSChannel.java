@@ -2,7 +2,6 @@ package model;
 
 import config.RSSConfiguration;
 
-import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,7 +55,7 @@ public class RSSChannel {
      */
     public RSSChannel(RSSConfiguration configuration, String feed, FeedModel model, final Date latestPubDate)
             throws InvalidObjectException {
-        if (! model.metaSource.keySet().containsAll(RSSConfiguration.getMandatoryRawChannelFields())) {
+        if (! model.metaSource.keySet().containsAll(RSSConfiguration.getRawMandatoryChannelFields())) {
             throw new InvalidObjectException("RSS Channel does not contains all the mandatory fields");
         }
         this.metaBody = new HashMap<>();
