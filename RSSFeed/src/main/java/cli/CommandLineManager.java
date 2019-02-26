@@ -1,6 +1,7 @@
 package cli;
 
 import config.RSSConfiguration;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.Map;
 /**
  * Implementation of CLI
  */
+@Slf4j
 public class CommandLineManager {
 
     /**
@@ -67,7 +69,7 @@ public class CommandLineManager {
             try {
                 f.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("[ERROR] Error occurred during creating file: " + e.getMessage());
             }
         }
     }
@@ -110,6 +112,15 @@ public class CommandLineManager {
     }
 
     /**
+     * Get Rss status (On or Off)
+     *
+     * @param link rss feed link
+     */
+    public String getRssStatus(String link) {
+        return RSSConfiguration.getInstance().isRSSFeedOn(link) ? "ON" : "OFF";
+    }
+
+    /**
      * Print all the RSS feeds with associated files
      */
     public void printRss() {
@@ -121,13 +132,13 @@ public class CommandLineManager {
                             String.format(
                                     "%s (%s): %s",
                                     rss,
-                                    RSSConfiguration.getInstance().isRSSFeedOn(rss) ? "ON" : "OFF",
+                                    getRssStatus(rss),
                                     file
                             )
                     )
             );
         } else {
-            writer.println("No RSS available");
+            log.warn("[WARN] No RSS available");
         }
         writer.flush(); // вывод
     }

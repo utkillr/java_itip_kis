@@ -1,8 +1,10 @@
 import cli.CommandLineParser;
+import lombok.extern.slf4j.Slf4j;
 import poller.Poller;
 
 import java.util.Scanner;
 
+@Slf4j
 public class Main {
     public static void main(String[] args) {
 
@@ -29,7 +31,7 @@ public class Main {
             // Graceful shutdown
             pollingThread.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("[ERROR] Waits for thread dieing is interrupted: " + e.getMessage());
         }
     }
 }
