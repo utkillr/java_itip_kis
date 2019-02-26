@@ -24,33 +24,37 @@ class ImmutableRSSConfig {
             .stream()
             .map(String::toLowerCase)
             .collect(Collectors.toList());
+    static List<String> defaultRawAvailableItemFields = Arrays.asList(ITEM_TITLE, ITEM_DESCRIPTION);
+    static List<String> mandatoryRawItemFields = Arrays.asList(ITEM_TITLE, ITEM_PUB_DATE);
 
-
-    private static String FEED_TITLE = "title";
-    private static String FEED_LINK = "link";
-    private static String FEED_DESCRIPTION = "description";
-    private static String FEED_LANGUAGE = "language";
-    private static String FEED_COPYRIGHT = "copyright";
-    private static String FEED_MANAGING_EDITOR = "managingEditor";
-    private static String FEED_WEB_MASTER = "webMaster";
-    private static String FEED_PUB_DATE = "pubDate";
-    private static String FEED_LAST_BUILD_DATE = "lastBuildDate";
-    private static String FEED_CATEGORY = "category";
-    private static String FEED_GENERATOR = "generator";
-    private static String FEED_DOCS = "docs";
-    private static String FEED_CLOUD = "cloud";
-    private static String FEED_TTL = "ttl";
-    private static String FEED_RATING = "rating";
-    private static String FEED_TEXT_INPUT = "textInput";
-    private static String FEED_SKIP_HOURS = "skipHours";
-    private static String FEED_SKIP_DAYS = "skipDays";
+    private static String CHANNEL_TITLE = "title";
+    private static String CHANNEL_LINK = "link";
+    private static String CHANNEL_DESCRIPTION = "description";
+    private static String CHANNEL_LANGUAGE = "language";
+    private static String CHANNEL_COPYRIGHT = "copyright";
+    private static String CHANNEL_MANAGING_EDITOR = "managingEditor";
+    private static String CHANNEL_WEB_MASTER = "webMaster";
+    private static String CHANNEL_PUB_DATE = "pubDate";
+    private static String CHANNEL_LAST_BUILD_DATE = "lastBuildDate";
+    private static String CHANNEL_CATEGORY = "category";
+    private static String CHANNEL_GENERATOR = "generator";
+    private static String CHANNEL_DOCS = "docs";
+    private static String CHANNEL_CLOUD = "cloud";
+    private static String CHANNEL_TTL = "ttl";
+    private static String CHANNEL_RATING = "rating";
+    private static String CHANNEL_TEXT_INPUT = "textInput";
+    private static String CHANNEL_SKIP_HOURS = "skipHours";
+    private static String CHANNEL_SKIP_DAYS = "skipDays";
     static List<String> availableChannelFields = Arrays.asList(
-            FEED_TITLE, FEED_LINK, FEED_DESCRIPTION, FEED_LANGUAGE, FEED_COPYRIGHT, FEED_MANAGING_EDITOR,
-            FEED_WEB_MASTER, FEED_PUB_DATE, FEED_LAST_BUILD_DATE, FEED_CATEGORY, FEED_GENERATOR, FEED_DOCS, FEED_CLOUD,
-            FEED_TTL, FEED_RATING, FEED_TEXT_INPUT, FEED_SKIP_HOURS, FEED_SKIP_DAYS
+            CHANNEL_TITLE, CHANNEL_LINK, CHANNEL_DESCRIPTION, CHANNEL_LANGUAGE, CHANNEL_COPYRIGHT,
+            CHANNEL_MANAGING_EDITOR, CHANNEL_WEB_MASTER, CHANNEL_PUB_DATE, CHANNEL_LAST_BUILD_DATE, CHANNEL_CATEGORY,
+            CHANNEL_GENERATOR, CHANNEL_DOCS, CHANNEL_CLOUD, CHANNEL_TTL, CHANNEL_RATING, CHANNEL_TEXT_INPUT,
+            CHANNEL_SKIP_HOURS, CHANNEL_SKIP_DAYS
     );
     static List<String> rawAvailableChannelFields = availableChannelFields
             .stream()
             .map(String::toLowerCase)
             .collect(Collectors.toList());
+    static List<String> defaultRawAvailableChannelFields = Arrays.asList(CHANNEL_TITLE, CHANNEL_DESCRIPTION);
+    static List<String> mandatoryRawChannelFields = Arrays.asList(CHANNEL_TITLE);
 }

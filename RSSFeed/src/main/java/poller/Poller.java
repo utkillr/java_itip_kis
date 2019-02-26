@@ -32,7 +32,7 @@ public class Poller implements Runnable {
     /**
      * Time to sleep between checks for time to poll modifications
      */
-    private static long timeCheckThreshold = 5;
+    public static long timeCheckThreshold = 5;
 
     private boolean running;
 
@@ -68,19 +68,19 @@ public class Poller implements Runnable {
             InputStream in = url.openStream();
             FeedModel model = new FeedModelParser().parse(in);
             Path path = Paths.get(file);
-            RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), model, fromPubDate);
+            RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), link, model, fromPubDate);
 
             // we do not want to append empty channel description
             if (channel.getItems().size() > 0) {
 
                 final String feedString = getStringFromMap(
-                        channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(), 0
+                        channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(link), 0
                 );
                 Files.write(path, feedString.getBytes(), APPEND);
 
                 for (RSSItem item : channel.getItems()) {
                     final String itemString = getStringFromMap(
-                            item.getBody(), RSSConfiguration.getInstance().getItemFields(), 1
+                            item.getBody(), RSSConfiguration.getInstance().getItemFields(link), 1
                     );
                     Files.write(path, itemString.getBytes(), APPEND);
                 }

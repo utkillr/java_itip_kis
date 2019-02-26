@@ -16,7 +16,7 @@ public class Main {
         // Initialize CLI
         CommandLineParser cli = new CommandLineParser();
         Scanner scanner = new Scanner(System.in);
-        log.info("Use -h for help\n");
+        log.info("Use 'help' for help\n");
 
         // Initialize thread and start it
         Poller poller = new Poller();

@@ -1,5 +1,7 @@
 package config;
 
+import poller.Poller;
+
 import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,18 +16,36 @@ public class RSSConfiguration {
      */
     private static final RSSConfiguration configuration = new RSSConfiguration();
 
-    private List<String> itemFields;
-    private List<String> channelFields;
     private long timeToPoll;
     private Map<String, String> RSSFeeds;
     private Map<String, LocalFeedInfo> RSSFeedStatus;
+    private Map<String, List<String>> RSSFeedChannelFields;
+    private Map<String, List<String>> RSSFeedItemFields;
 
     private RSSConfiguration() {
-        itemFields = new ArrayList<>();
-        channelFields = new ArrayList<>();
-        timeToPoll = 10L;
+        RSSFeedChannelFields = new HashMap<>();
+        RSSFeedItemFields = new HashMap<>();
+        timeToPoll = 30L;
         RSSFeeds = new HashMap<>();
         RSSFeedStatus = new HashMap<>();
+    }
+
+    /**
+     * Get all the mandatory channel fields
+     *
+     * @return unmodifiable list of mandatory channel fields
+     */
+    public static List<String> getMandatoryRawChannelFields() {
+        return Collections.unmodifiableList(ImmutableRSSConfig.mandatoryRawChannelFields);
+    }
+
+    /**
+     * Get all the mandatory item fields
+     *
+     * @return unmodifiable list of mandatory item fields
+     */
+    public static List<String> getMandatoryRawItemFields() {
+        return Collections.unmodifiableList(ImmutableRSSConfig.mandatoryRawItemFields);
     }
 
     /**
@@ -49,19 +69,25 @@ public class RSSConfiguration {
     /**
      * Get configured item fields
      *
+     * @param feed Feed to get configured item feeds
      * @return unmodifiable list of configured item fields
      */
-    public List<String> getItemFields() {
-        return Collections.unmodifiableList(itemFields);
+    public List<String> getItemFields(String feed) {
+        return Collections.unmodifiableList(RSSFeedItemFields.get((feed)));
     }
 
     /**
      * Get configured channel fields
      *
+     * @param feed Feed to get configured channel feeds
      * @return unmodifiable list of configured channel fields
      */
-    public List<String> getChannelFields() {
-        return Collections.unmodifiableList(channelFields);
+    public List<String> getChannelFields(String feed) {
+        return Collections.unmodifiableList(RSSFeedChannelFields.get((feed)));
+    }
+
+    public void setRSSFeedFile(String feed, String file) {
+        RSSFeeds.replace(feed, file);
     }
 
     /**
@@ -78,35 +104,42 @@ public class RSSConfiguration {
      * Waits for lists which are not handled in case of they are empty
      * Unavailable fields are ignored
      *
+     * @param feed Feed to reconfig
      * @param itemFields item fields to be configured
      * @param channelFields channel fields to be configured
      */
-    public void reconfig(List<String> itemFields, List<String> channelFields) {
+    public void reconfig(String feed, List<String> itemFields, List<String> channelFields) {
 
         if(itemFields != null && itemFields.size() > 0){
-            this.itemFields = itemFields
+            List<String> newFields = itemFields
                     .stream()
                     .map(String::toLowerCase)
                     .filter(ImmutableRSSConfig.rawAvailableItemFields::contains)
                     .collect(Collectors.toList());
+            if (! newFields.isEmpty()) {
+                this.RSSFeedItemFields.replace(feed, newFields);
+            }
         }
 
         if(channelFields != null && channelFields.size() > 0){
-            this.channelFields = channelFields
+            List<String> newFields = channelFields
                     .stream()
                     .map(String::toLowerCase)
                     .filter(ImmutableRSSConfig.rawAvailableChannelFields::contains)
                     .collect(Collectors.toList());
+            if (! newFields.isEmpty()) {
+                this.RSSFeedChannelFields.replace(feed, newFields);
+            }
         }
     }
 
     /**
-     * Set time to poll
+     * Set time to poll. It can't be more than polling threshold
      *
      * @param time new time to poll
      */
     public void setTimeToPoll(Long time) {
-        this.timeToPoll = time;
+        this.timeToPoll = time > Poller.timeCheckThreshold ? time : Poller.timeCheckThreshold;
     }
 
     /**
@@ -129,6 +162,8 @@ public class RSSConfiguration {
         if (!RSSFeeds.containsKey(feed)) {
             RSSFeeds.put(feed, file);
             RSSFeedStatus.put(feed, new LocalFeedInfo());
+            RSSFeedChannelFields.put(feed, new ArrayList<>(ImmutableRSSConfig.defaultRawAvailableChannelFields));
+            RSSFeedItemFields.put(feed, new ArrayList<>(ImmutableRSSConfig.defaultRawAvailableItemFields));
         } else {
             throw new InvalidParameterException("Feed " + feed + " is already added");
         }
@@ -141,6 +176,9 @@ public class RSSConfiguration {
      */
     public void delRSSFeed(String feed) {
         RSSFeeds.remove(feed);
+        RSSFeedStatus.remove(feed);
+        RSSFeedChannelFields.remove(feed);
+        RSSFeedItemFields.remove(feed);
     }
 
     /**

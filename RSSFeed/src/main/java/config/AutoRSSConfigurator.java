@@ -11,11 +11,20 @@ import java.util.StringJoiner;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 
+/**
+ * Saves and loads configuration file with the following structure:
+ * Time to poll
+ * Feed;File;Status;LastPubDate;ChannelFields(,);ItemFields(,)
+ * ...
+ */
 public class AutoRSSConfigurator {
 
     private static String file = "rss.cfg";
-
     private static Log log = new Log(AutoRSSConfigurator.class.getName(), System.out);
+
+    public static void setFile(String file) {
+        AutoRSSConfigurator.file = file;
+    }
 
     public static void saveRSSConfiguration() {
         File f = new File(file);
@@ -31,10 +40,10 @@ public class AutoRSSConfigurator {
         synchronized (RSSConfiguration.getInstance()) {
             RSSConfiguration configuration = RSSConfiguration.getInstance();
             try {
-                Files.write(f.toPath(), (getChannelFields(configuration) + "\n").getBytes(), APPEND);
-                Files.write(f.toPath(), (getItemFields(configuration) + "\n").getBytes(), APPEND);
                 Files.write(f.toPath(), (getTimeToPoll(configuration) + "\n").getBytes(), APPEND);
-                Files.write(f.toPath(), (getRSSFeedsFullInfo(configuration) + "\n").getBytes(), APPEND);
+                for (String feed : configuration.getRSSFeeds().keySet()) {
+                    Files.write(f.toPath(), (getRSSFeedFullInfo(feed, configuration) + "\n").getBytes(), APPEND);
+                }
             } catch (IOException e) {
                 log.error("Not all the configuration can be written.");
             }
@@ -51,20 +60,17 @@ public class AutoRSSConfigurator {
         RSSConfiguration configuration = RSSConfiguration.getInstance();
         try {
             List<String> configList = Files.readAllLines(f.toPath());
-            if (configList.size() < 3) {
+            if (configList.size() < 1) {
                 log.error("Config is invalid");
             } else {
-                configuration.reconfig(
-                        parseFields(configList.get(0)),
-                        parseFields(configList.get(1))
-                );
-                configuration.setTimeToPoll(Long.valueOf(configList.get(2)));
-                if (configList.size() > 3) {
-                    for (String line : configList.subList(3, configList.size())) {
+                long timeToPoll = Long.valueOf(configList.get(0));
+                configuration.setTimeToPoll(timeToPoll);
+                if (configList.size() > 1) {
+                    for (String line : configList.subList(1, configList.size())) {
                         if (line.isEmpty()) continue;
-                        // Gonna be List of 4 elems: feed, link, status and pubdate
-                        List<String> parsed = parseFields(line);
-                        if (parsed.size() != 4) {
+                        // Gonna be List of 6 elems: feed, link, status, pubdate, channel fields, item fields
+                        List<String> parsed = parseParams(line);
+                        if (parsed.size() != 6) {
                             log.warn("RSS Feed Configuration can't be read");
                             continue;
                         }
@@ -78,11 +84,14 @@ public class AutoRSSConfigurator {
                         }
                         // Set pub date
                         String lastPubDate = parsed.get(3);
-                        if (!lastPubDate.equals("null")) {
-                            configuration.notifyFeedRead(parsed.get(0), new Date(Long.valueOf(lastPubDate)));
-                        } else {
-                            configuration.notifyFeedRead(parsed.get(0), null);
-                        }
+                        configuration.notifyFeedRead(
+                                parsed.get(0),
+                                lastPubDate.equals("null") ? null : new Date(Long.valueOf(lastPubDate))
+                        );
+                        // Parse and set channel and item fields
+                        List<String> channelFields = parseFields(parsed.get(4));
+                        List<String> itemFields = parseFields(parsed.get(5));
+                        configuration.reconfig(parsed.get(0), itemFields, channelFields);
                     }
                 }
             }
@@ -92,47 +101,38 @@ public class AutoRSSConfigurator {
         }
     }
 
-    private static String getChannelFields(RSSConfiguration configuration) {
-        StringJoiner joiner = new StringJoiner(";");
-        for (String field : configuration.getChannelFields()) {
+    private static String getTimeToPoll(RSSConfiguration configuration) {
+        return configuration.getTimeToPoll().toString();
+    }
+
+    private static String getRSSFeedFullInfo(String feed, RSSConfiguration configuration) {
+        StringBuilder builder = new StringBuilder();
+        String lastPubDate = configuration.getRSSFeedLastPubDate(feed) == null
+                        ? "null"
+                        : Long.toString(configuration.getRSSFeedLastPubDate(feed).getTime());
+        builder
+                .append(feed).append(";")
+                .append(configuration.getRSSFeeds().get(feed)).append(";")
+                .append(configuration.isRSSFeedOn(feed) ? "1" : "0").append(";")
+                .append(lastPubDate).append(";")
+                .append(getFields(configuration.getChannelFields(feed))).append(";")
+                .append(getFields(configuration.getItemFields(feed)));
+        return builder.toString();
+    }
+
+    private static String getFields(List<String> fields) {
+        StringJoiner joiner = new StringJoiner(",");
+        for (String field : fields) {
             joiner.add(field);
         }
         return joiner.toString();
     }
 
-    private static String getItemFields(RSSConfiguration configuration) {
-        StringJoiner joiner = new StringJoiner(";");
-        for (String item : configuration.getItemFields()) {
-            joiner.add(item);
-        }
-        return joiner.toString();
+    private static List<String> parseParams(String line) {
+        return Arrays.asList(line.split(";"));
     }
-
-    private static String getTimeToPoll(RSSConfiguration configuration) {
-        return configuration.getTimeToPoll().toString();
-    }
-
-    private static String getRSSFeedsFullInfo(RSSConfiguration configuration) {
-        StringJoiner linesJoiner = new StringJoiner("\n");
-        configuration.getRSSFeeds().forEach((feed, link) -> {
-            StringBuilder builder = new StringBuilder();
-            builder
-                    .append(feed).append(";")
-                    .append(link).append(";")
-                    .append(configuration.isRSSFeedOn(feed) ? "1" : "0").append(";");
-            Date lastPubDate = configuration.getRSSFeedLastPubDate(feed);
-            if (lastPubDate != null) {
-                builder.append(Long.toString(lastPubDate.getTime()));
-            } else {
-                builder.append("null");
-            }
-            linesJoiner.add(builder.toString());
-        });
-        return linesJoiner.toString();
-    }
-
 
     private static List<String> parseFields(String line) {
-        return Arrays.asList(line.split(";"));
+        return Arrays.asList(line.split(","));
     }
 }

@@ -3,9 +3,11 @@ package model;
 import config.RSSConfiguration;
 import util.PubDateParser;
 
+import java.io.InvalidObjectException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This class represents RSS Channel (Atom syntax is ignored for now).
@@ -39,19 +41,19 @@ public class RSSItem {
      * Parse latestPubDate
      *
      * @param configuration RSSConfiguration instance
+     * @param feed Link to RSS feed
      * @param source parsed Map from FeedModel
      */
-    RSSItem(RSSConfiguration configuration, Map<String, String> source) {
+    RSSItem(RSSConfiguration configuration, String feed, Map<String, String> source) throws InvalidObjectException {
+        if (! source.keySet().containsAll(RSSConfiguration.getMandatoryRawItemFields())) {
+            throw new InvalidObjectException("RSS Channel does not contains all the mandatory fields");
+        }
         this.body = new HashMap<>();
         source.forEach((key, value) -> {
-            if (configuration.getItemFields().contains(key)) {
+            if (configuration.getItemFields(feed).contains(key)) {
                 body.put(key, value);
             }
         });
-        if (source.containsKey("pubDate".toLowerCase())) {
-            latestPubDate = PubDateParser.parse(source.get("pubDate".toLowerCase()));
-        } else {
-            latestPubDate = null;
-        }
+        latestPubDate = PubDateParser.parse(source.get("pubDate".toLowerCase()));
     }
 }

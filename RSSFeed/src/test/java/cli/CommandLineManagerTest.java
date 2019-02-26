@@ -1,48 +1,31 @@
 package cli;
 
 import config.RSSConfiguration;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import poller.Poller;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
+
 public class CommandLineManagerTest {
-    private CommandLineManager manager = new CommandLineManager();
+    private CommandLineManager manager;
 
-    @Test
-    @DisplayName("Test of processing item params")
-    public void itemParamsProcessTest() {
-        List<String> itemParamsFirst = Arrays.asList("title", "link", "description", "pubdate");
-        List<String> itemParamsSecond = Arrays.asList("title", "link", "description");
-
-        manager.setItemParams(itemParamsFirst);
-        List<String> itemFields = RSSConfiguration.getInstance().getItemFields();
-        assertEquals(itemFields, itemParamsFirst);
-
-        manager.setItemParams(itemParamsSecond);
-        itemFields = RSSConfiguration.getInstance().getItemFields();
-        assertEquals(itemFields, itemParamsSecond);
-        assertNotEquals(itemFields, itemParamsFirst);
+    @Before
+    public void setManager() {
+        manager = new CommandLineManager();
     }
 
     @Test
-    @DisplayName("Test of processing channel params")
-    public void channelParamsProcessTest() {
-        List<String> channelParamsFirst = Arrays.asList("title", "link", "description", "pubdate");
-        List<String> channelParamsSecond = Arrays.asList("title", "link", "description");
-
-        manager.setChannelParams(channelParamsFirst);
-        List<String> channelFields = RSSConfiguration.getInstance().getChannelFields();
-        assertEquals(channelFields, channelParamsFirst);
-
-        manager.setChannelParams(channelParamsSecond);
-        channelFields = RSSConfiguration.getInstance().getChannelFields();
-        assertEquals(channelFields, channelParamsSecond);
-        assertNotEquals(channelFields, channelParamsFirst);
+    @DisplayName("Sanity test for help printing")
+    public void printHelpTest() {
+        manager.printHelp();
     }
 
     @Test
@@ -63,40 +46,120 @@ public class CommandLineManagerTest {
     }
 
     @Test
-    @DisplayName("Test of processing time to poll")
-    public void timeToPollProcessTest() {
+    @DisplayName("Test to associate, reassociate and dissociate feeds and files")
+    public void associateAndDissociateRssToFileTest() {
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+        String link = "dummy.rss";
+        String file = "dummy.txt";
+        manager.associateRssToFile(link, file);
+        assertEquals(1, RSSConfiguration.getInstance().getRSSFeeds().size());
+        assertEquals(file, RSSConfiguration.getInstance().getRSSFeeds().get(link));
+
+        file = "new_dummy.txt";
+        manager.reassociateRssToFile(link, file);
+        assertEquals(1, RSSConfiguration.getInstance().getRSSFeeds().size());
+        assertEquals(file, RSSConfiguration.getInstance().getRSSFeeds().get(link));
+
+        manager.dissociateRss(link);
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test to turn feeds on and off")
+    public void turnRSSOnOffTest() {
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+        String link = "dummy.rss";
+        String file = "dummy.txt";
+        manager.associateRssToFile(link, file);
+        assertTrue(RSSConfiguration.getInstance().isRSSFeedOn(link));
+
+        manager.turnRSSOn(link);
+        assertTrue(RSSConfiguration.getInstance().isRSSFeedOn(link));
+
+        manager.turnRSSOff(link);
+        assertFalse(RSSConfiguration.getInstance().isRSSFeedOn(link));
+
+        manager.turnRSSOff(link);
+        assertFalse(RSSConfiguration.getInstance().isRSSFeedOn(link));
+
+        manager.turnRSSOn(link);
+        assertTrue(RSSConfiguration.getInstance().isRSSFeedOn(link));
+
+        manager.dissociateRss(link);
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test to setup different item params")
+    public void setRssItemParamsTest() {
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+        String link = "dummy.rss";
+        String file = "dummy.txt";
+        manager.associateRssToFile(link, file);
+        List<String> params = RSSConfiguration.getInstance().getItemFields(link);
+
+        manager.setRssItemParams(link, new ArrayList<>());
+        assertTrue(params.containsAll(RSSConfiguration.getInstance().getItemFields(link)));
+        assertTrue(RSSConfiguration.getInstance().getItemFields(link).containsAll(params));
+
+        params = Arrays.asList("title", "description", "pubdate");
+        manager.setRssItemParams(link, params);
+        assertTrue(params.containsAll(RSSConfiguration.getInstance().getItemFields(link)));
+        assertTrue(RSSConfiguration.getInstance().getItemFields(link).containsAll(params));
+
+        params = Arrays.asList("title", "description", "dummyfield");
+        List<String> validParams = Arrays.asList("title", "description");
+        assertTrue(params.containsAll(RSSConfiguration.getInstance().getChannelFields(link)));
+        assertTrue(RSSConfiguration.getInstance().getItemFields(link).containsAll(validParams));
+        assertFalse(RSSConfiguration.getInstance().getItemFields(link).containsAll(params));
+
+        manager.dissociateRss(link);
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test to setup different channel params")
+    public void setRssChannelParamsTest() {
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+        String link = "dummy.rss";
+        String file = "dummy.txt";
+        manager.associateRssToFile(link, file);
+        List<String> params = RSSConfiguration.getInstance().getChannelFields(link);
+
+        manager.setRssChannelParams(link, new ArrayList<>());
+        assertTrue(params.containsAll(RSSConfiguration.getInstance().getChannelFields(link)));
+        assertTrue(RSSConfiguration.getInstance().getChannelFields(link).containsAll(params));
+
+        params = Arrays.asList("title", "description", "pubdate");
+        manager.setRssChannelParams(link, params);
+        assertTrue(params.containsAll(RSSConfiguration.getInstance().getChannelFields(link)));
+        assertTrue(RSSConfiguration.getInstance().getChannelFields(link).containsAll(params));
+
+        params = Arrays.asList("title", "description", "dummyfield");
+        List<String> validParams = Arrays.asList("title", "description");
+        manager.setRssChannelParams(link, params);
+        assertTrue(params.containsAll(RSSConfiguration.getInstance().getChannelFields(link)));
+        assertTrue(RSSConfiguration.getInstance().getChannelFields(link).containsAll(validParams));
+        assertFalse(RSSConfiguration.getInstance().getChannelFields(link).containsAll(params));
+
+        manager.dissociateRss(link);
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test to setup time to poll")
+    public void setTimeToPollTest() {
         Long timeToPollFirst = 10L;
         Long timeToPollSecond = 20L;
+        Long timeToPollInvalid = 2L;
 
         manager.setTimeToPoll(timeToPollFirst);
         assertEquals(timeToPollFirst, RSSConfiguration.getInstance().getTimeToPoll());
 
         manager.setTimeToPoll(timeToPollSecond);
         assertEquals(timeToPollSecond, RSSConfiguration.getInstance().getTimeToPoll());
-        assertNotEquals(timeToPollFirst, RSSConfiguration.getInstance().getTimeToPoll());
-    }
 
-    @Test
-    @DisplayName("Test of processing rss")
-    public void rssProcessingTest() {
-        String firstRss = "firstRss";
-        String secondRss = "secondRss";
-
-        String firstFile = "firstFile.txt";
-        String secondFile = "secondFile.txt";
-
-        manager.associateRssToFile(firstRss, firstFile);
-        assertEquals(firstFile, RSSConfiguration.getInstance().getRSSFeeds().get(firstRss));
-        assertNotEquals(firstFile, RSSConfiguration.getInstance().getRSSFeeds().get(secondRss));
-        assertNotEquals(secondFile, RSSConfiguration.getInstance().getRSSFeeds().get(firstRss));
-
-        manager.turnRSSOff(firstRss);
-        assertEquals("OFF", manager.getRssStatus(firstRss));
-
-        manager.turnRSSOn(firstRss);
-        assertEquals("ON", manager.getRssStatus(firstRss));
-
-        manager.diassociateRss(firstRss);
-        assertNotEquals(firstFile, RSSConfiguration.getInstance().getRSSFeeds().get(firstRss));
+        manager.setTimeToPoll(timeToPollInvalid);
+        assertEquals((Long)Poller.timeCheckThreshold, RSSConfiguration.getInstance().getTimeToPoll());
     }
 }

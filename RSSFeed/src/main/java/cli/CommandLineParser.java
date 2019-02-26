@@ -1,14 +1,20 @@
 package cli;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.*;
 
 /**
  * Parser for CLI Wrapper
  */
 public class CommandLineParser {
-    private CommandLineManager manager = new CommandLineManager();
+    private CommandLineManager manager;
+
+    public CommandLineParser() {
+        manager = new CommandLineManager();
+    }
+
+    public CommandLineParser(CommandLineManager manager) {
+        this.manager = manager;
+    }
 
     /**
      * Parse input command (cli wrapper)
@@ -19,49 +25,28 @@ public class CommandLineParser {
      *      1 means graceful exit
      */
     public int parse(String inputString) {
-        manager.init();
-
         Map<String, List<String>> commandMap = new HashMap<>();
         List<String> blocks = Arrays.asList(inputString.split(" "));
         commandMap.put(blocks.get(0), blocks.size() > 1 ? blocks.subList(1, blocks.size()) : Collections.EMPTY_LIST);
 
-        // item properties
-        if (commandMap.containsKey("ip")) {
-            List<String> params = commandMap.get("ip");
-            if (params.size() > 0) {
-                // set item properties
-                manager.setItemParams(params);
-                manager.prettyPrint("Successfully set Item Properties to: " + params);
-            } else {
-                // get item properties
-                manager.printItemParams();
-            }
-        }
-
-        // channel properties
-        if (commandMap.containsKey("cp")) {
-            List<String> params = commandMap.get("fp");
-            if (params.size() > 0) {
-                // set channel properties
-                manager.setChannelParams(params);
-                manager.prettyPrint("Successfully set Channel Properties to: " + params);
-            } else {
-                // get channel properties
-                manager.printChannelParams();
-            }
-        }
-
         // rss
         if (commandMap.containsKey("rss")) {
             List<String> params  = commandMap.get("rss");
+            // go into
             if (params.size() > 0) {
-                switch (params.get(0)) {
+                String subCommand = params.get(0);
+                params = params.subList(1, params.size());
+                switch (subCommand) {
+                    // addition
                     case "add": {
-                        if (params.size() != 3) {
-                            throw new IllegalArgumentException("Not enough params for -rss add");
+                        if (params.size() < 2) {
+                            throw new IllegalArgumentException("Not enough params for rss add");
                         }
-                        String rssLink = params.get(1);
-                        String file = params.get(2);
+                        if (params.size() > 2) {
+                            throw new IllegalArgumentException("Too many params for rss add");
+                        }
+                        String rssLink = params.get(0);
+                        String file = params.get(1);
                         manager.createFileIfNotExists(file);
                         manager.associateRssToFile(rssLink, file);
                         manager.prettyPrint(
@@ -70,39 +55,100 @@ public class CommandLineParser {
                         );
                         break;
                     }
+                    // removal
                     case "del": {
-                        if (params.size() != 2) {
-                            throw new IllegalArgumentException("Not enough params for -rss del");
+                        if (params.size() < 1) {
+                            throw new IllegalArgumentException("Not enough params for rss del");
                         }
-                        String rssLink = params.get(1);
-                        manager.diassociateRss(rssLink);
-                        manager.prettyPrint("Successfully removed new RSS Feed: " + rssLink);
+                        for (String rssLink : params) {
+                            manager.dissociateRss(rssLink);
+                            manager.prettyPrint("Successfully removed new RSS Feed: " + rssLink);
+                        }
                         break;
                     }
+                    // turn on
                     case "on": {
-                        if (params.size() != 2) {
-                            throw new IllegalArgumentException("Not enough params for -rss on");
+                        if (params.size() < 1) {
+                            throw new IllegalArgumentException("Not enough params for rss on");
                         }
-                        String rssLink = params.get(1);
-                        manager.turnRSSOn(rssLink);
-                        manager.prettyPrint("Successfully turned RSS Feed " + rssLink + " on");
+                        for (String rssLink : params) {
+                            manager.turnRSSOn(rssLink);
+                            manager.prettyPrint("Successfully turned RSS Feed " + rssLink + " on");
+                        }
                         break;
                     }
+                    // turn off
                     case "off": {
-                        if (params.size() != 2) {
-                            throw new IllegalArgumentException("Not enough params for -rss off");
+                        if (params.size() < 1) {
+                            throw new IllegalArgumentException("Not enough params for rss off");
                         }
-                        String rssLink = params.get(1);
-                        manager.turnRSSOff(rssLink);
-                        manager.prettyPrint("Successfully turned RSS Feed " + rssLink + " off");
+                        for (String rssLink : params) {
+                            manager.turnRSSOff(rssLink);
+                            manager.prettyPrint("Successfully turned RSS Feed " + rssLink + " off");
+                        }
+                        break;
+                    }
+                    case "file": {
+                        if (params.size() < 1) {
+                            throw new IllegalArgumentException("Not enough params for rss file");
+                        } else if (params.size() > 2) {
+                            throw new IllegalArgumentException("Too many params for rss file");
+                        }
+                        String rssLink = params.get(0);
+                        // print current file
+                        if (params.size() == 1) {
+                            manager.printRssFile(rssLink);
+                        } else if (params.size() == 2) {
+                            manager.reassociateRssToFile(rssLink, params.get(1));
+                        }
+                    }
+                    // go into item fields
+                    case "item": {
+                        // print available
+                        if (params.size() == 0) {
+                            manager.printAvailableRssItemParams();
+                        } else {
+                            String rssLink = params.get(0);
+                            params = params.subList(1, params.size());
+                            // print configured
+                            if (params.size() == 0) {
+                                manager.printRssItemParams(rssLink);
+                            // set
+                            } else {
+                                manager.setRssItemParams(rssLink, params);
+                                manager.prettyPrint("Successfully set Item Properties to: " + params);
+                            }
+                        }
+                        break;
+                    }
+                    // go into channel fields
+                    case "channel": {
+                        // print available
+                        if (params.size() == 0) {
+                            manager.printAvailableRssChannelParams();
+                        } else {
+                            String rssLink = params.get(0);
+                            params = params.subList(1, params.size());
+                            // print configured
+                            if (params.size() == 0) {
+                                manager.printRssChannelParams(rssLink);
+                            // set
+                            } else {
+                                manager.setRssChannelParams(rssLink, params);
+                                manager.prettyPrint("Successfully set Channel Properties to: " + params);
+                            }
+                        }
                         break;
                     }
                 }
+            // print all feeds
             } else {
                 manager.printRss();
             }
+        // time
         } else if (commandMap.containsKey("time")) {
             List<String> params  = commandMap.get("time");
+            // set
             if (params.size() > 0) {
                 if (params.size() != 1) {
                     throw new IllegalArgumentException("Not enough params for -time");
@@ -110,14 +156,18 @@ public class CommandLineParser {
                 String newTimeToPoll = params.get(0);
                 manager.setTimeToPoll(Long.valueOf(newTimeToPoll));
                 manager.prettyPrint("Successfully set polling time to " + newTimeToPoll);
-
+            // print
             } else {
                 manager.printTimeToPoll();
             }
-        } else if (commandMap.containsKey("h")) {
+        // help
+        } else if (commandMap.containsKey("help")) {
             manager.printHelp();
+        // exit
         } else if (commandMap.containsKey("exit")) {
             return 1;
+        } else {
+            throw new IllegalArgumentException("Inknown argument. Try help");
         }
         return 0;
     }
