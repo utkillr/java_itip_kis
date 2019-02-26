@@ -1,7 +1,7 @@
 package parser;
 
-import lombok.extern.slf4j.Slf4j;
 import model.FeedModel;
+import util.Log;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -12,8 +12,8 @@ import java.io.InputStream;
 /**
  * This class implements global parsing to throw away all the data besides "channel" tag
  */
-@Slf4j
 public class FeedModelParser {
+    private static Log log = new Log(FeedModelParser.class.getName(), System.out);
     /**
      * Iterate over XML until it's "channel" tag. Then call parser for RSSChannel
      *
@@ -36,7 +36,7 @@ public class FeedModelParser {
                 }
             }
         } catch (XMLStreamException e) {
-            log.error("[ERROR] Error occurred during parsing rss: " + e.getMessage());
+            log.error("Error occurred during parsing rss: " + e.getMessage());
             throw new RuntimeException(e);
         }
         return model;

@@ -1,7 +1,7 @@
 package parser;
 
-import lombok.extern.slf4j.Slf4j;
 import model.FeedModel;
+import util.Log;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -10,8 +10,10 @@ import javax.xml.stream.events.XMLEvent;
 /**
  * This class implements parsing for channel properties and items
  */
-@Slf4j
 class RSSChannelParser {
+    private static Log log = new Log(RSSChannelParser.class.getName(), System.out);
+
+
     /**
      * Iterate over XML and write channel properties until it's "item" tag.
      * Then call parser for RSSItem (in loop)
@@ -50,7 +52,7 @@ class RSSChannelParser {
                 }
             }
         } catch (XMLStreamException e) {
-            log.error("[ERROR] Error occurred during parsing XML items and writing channel properties: " + e.getMessage());
+            log.error("Error occurred during parsing XML items and writing channel properties: " + e.getMessage());
             throw new RuntimeException(e);
         }
         return model;

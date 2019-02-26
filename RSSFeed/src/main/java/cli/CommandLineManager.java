@@ -1,7 +1,7 @@
 package cli;
 
 import config.RSSConfiguration;
-import lombok.extern.slf4j.Slf4j;
+import util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,8 +14,9 @@ import java.util.Map;
 /**
  * Implementation of CLI
  */
-@Slf4j
 public class CommandLineManager {
+
+    private static Log log = new Log(CommandLineManager.class.getName(), System.out);
 
     /**
      * Initial manager setup
@@ -69,7 +70,7 @@ public class CommandLineManager {
             try {
                 f.createNewFile();
             } catch (IOException e) {
-                log.error("[ERROR] Error occurred during creating file: " + e.getMessage());
+                log.error("Error occurred during creating file: " + e.getMessage());
             }
         }
     }
@@ -138,7 +139,7 @@ public class CommandLineManager {
                     )
             );
         } else {
-            log.warn("[WARN] No RSS available");
+            log.warn("No RSS available");
         }
         writer.flush(); // вывод
     }
@@ -196,12 +197,9 @@ public class CommandLineManager {
 
     public void prettyPrint(String... messages) {
         StringBuilder builder = new StringBuilder();
-        builder.append("[RESPONSE]:\n");
         for (String message : messages) {
             builder.append("\t").append(message).append("\n");
         }
-        final PrintWriter writer = new PrintWriter(System.out);
-        writer.println(builder.toString());
-        writer.flush(); // вывод
+        log.response(builder.toString());
     }
 }

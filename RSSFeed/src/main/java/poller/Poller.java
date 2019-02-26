@@ -1,11 +1,11 @@
 package poller;
 
 import config.RSSConfiguration;
-import lombok.extern.slf4j.Slf4j;
 import model.FeedModel;
 import model.RSSChannel;
 import model.RSSItem;
 import parser.FeedModelParser;
+import util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,8 +26,8 @@ import static java.nio.file.StandardOpenOption.APPEND;
  * Runnable class to poll RSS Feeds and write them to associated files
  * with provided polling time
  */
-@Slf4j
 public class Poller implements Runnable {
+    private static Log log = new Log(Poller.class.getName(), System.out);
 
     /**
      * Time to sleep between checks for time to poll modifications
@@ -73,8 +73,6 @@ public class Poller implements Runnable {
             // we do not want to append empty channel description
             if (channel.getItems().size() > 0) {
 
-                log.info("Writing new data :)");
-
                 final String feedString = getStringFromMap(
                         channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(), 0
                 );
@@ -90,9 +88,9 @@ public class Poller implements Runnable {
 
             return channel.getLatestPubDate();
         } catch (MalformedURLException e) {
-            log.error("[ERROR] Malformed URL has occurred: " + e.getMessage());
+            log.error("Malformed URL: " + e.getMessage());
         } catch (IOException e) {
-            log.error("[ERROR] Error occurred during writing RSS Feed to the file: " + e.getMessage());
+            log.error("Error occurred during writing RSS Feed to the file: " + e.getMessage());
         }
 
         return null;
@@ -133,7 +131,7 @@ public class Poller implements Runnable {
             try {
                 sleep(configuration);
             } catch (InterruptedException e) {
-                log.error("[ERROR] Thread sleeping is interrupted: " + e.getMessage());
+                log.error("Thread is interrupted during sleep: " + e.getMessage());
             }
         }
     }
@@ -161,7 +159,6 @@ public class Poller implements Runnable {
             long newTimeToPoll = configuration.getTimeToPoll();
             // If somebody changed poll time, apply it and start sleeping from scratch
             if (newTimeToPoll != currentTimeToPoll) {
-                log.info("Time changed from " + currentTimeToPoll + " to " + newTimeToPoll);
                 currentTimeToPoll = newTimeToPoll;
                 leftTimeToPoll = currentTimeToPoll;
             }

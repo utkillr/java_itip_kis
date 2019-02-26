@@ -13,4 +13,9 @@ class LocalFeedInfo {
         status = FeedStatus.ON;
         lastPubDate = null;
     }
+
+    public LocalFeedInfo(String status, long pubDate) {
+        this.status = status.equals("ON") ? FeedStatus.ON : FeedStatus.OFF;
+        this.lastPubDate = new Date(pubDate);
+    }
 }

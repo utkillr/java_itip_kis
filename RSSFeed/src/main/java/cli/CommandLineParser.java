@@ -7,7 +7,6 @@ import java.util.*;
 /**
  * Parser for CLI Wrapper
  */
-@Slf4j
 public class CommandLineParser {
     private CommandLineManager manager = new CommandLineManager();
 
