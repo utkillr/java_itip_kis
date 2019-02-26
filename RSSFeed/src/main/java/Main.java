@@ -8,7 +8,6 @@ import java.util.Scanner;
 public class Main {
     private static Log log = new Log(Main.class.getName(), System.out);
 
-
     public static void main(String[] args) {
 
         AutoRSSConfigurator.loadRSSConfiguration();

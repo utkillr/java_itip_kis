@@ -109,6 +109,9 @@ public class RSSConfiguration {
      * @param channelFields channel fields to be configured
      */
     public void reconfig(String feed, List<String> itemFields, List<String> channelFields) {
+        if (!RSSFeeds.containsKey(feed)) {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
+        }
 
         if(itemFields != null && itemFields.size() > 0){
             List<String> newFields = itemFields
@@ -175,10 +178,14 @@ public class RSSConfiguration {
      * @param feed link to RSS Feed
      */
     public void delRSSFeed(String feed) {
-        RSSFeeds.remove(feed);
-        RSSFeedStatus.remove(feed);
-        RSSFeedChannelFields.remove(feed);
-        RSSFeedItemFields.remove(feed);
+        if (RSSFeeds.containsKey(feed)) {
+            RSSFeeds.remove(feed);
+            RSSFeedStatus.remove(feed);
+            RSSFeedChannelFields.remove(feed);
+            RSSFeedItemFields.remove(feed);
+        } else {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
+        }
     }
 
     /**

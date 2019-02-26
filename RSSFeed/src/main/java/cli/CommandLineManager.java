@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
+  /**
  * Implementation of CLI
  */
 class CommandLineManager {
@@ -141,7 +141,7 @@ class CommandLineManager {
      *
      * @param link rss feed link
      */
-    String getRssStatus(String link) {
+    private String getRssStatus(String link) {
         return RSSConfiguration.getInstance().isRSSFeedOn(link) ? "ON" : "OFF";
     }
 

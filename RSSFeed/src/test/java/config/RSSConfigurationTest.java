@@ -6,9 +6,11 @@ import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import poller.Poller;
 
+import java.rmi.server.RMIServerSocketFactory;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
@@ -104,5 +106,69 @@ public class RSSConfigurationTest {
         RSSConfiguration.getInstance().setTimeToPoll(1L);
         assertEquals((Long)Poller.timeCheckThreshold, RSSConfiguration.getInstance().getTimeToPoll());
         RSSConfiguration.getInstance().setTimeToPoll(100L);
-        assertEquals((Long)100L, RSSConfiguration.getInstance().getTimeToPoll());}
+        assertEquals((Long)100L, RSSConfiguration.getInstance().getTimeToPoll());
+    }
+
+    @Test
+    @DisplayName("Test disability of config lists to be modified")
+    public void unmodifiableListsTest() {
+        assertTrue(getUnsupportedOperationException(RSSConfiguration.getRawMandatoryChannelFields()::add, "dummy"));
+        assertTrue(getUnsupportedOperationException(RSSConfiguration.getRawMandatoryItemFields()::add, "dummy"));
+        assertTrue(getUnsupportedOperationException(RSSConfiguration.getAvailableChannelFields()::add, "dummy"));
+        assertTrue(getUnsupportedOperationException(RSSConfiguration.getAvailableItemFields()::add, "dummy"));
+        assertTrue(getUnsupportedOperationException(RSSConfiguration.getInstance().getChannelFields("dummy.rss")::add, "dummy"));
+        assertTrue(getUnsupportedOperationException(RSSConfiguration.getInstance().getItemFields("dummy.rss")::add, "dummy"));
+    }
+
+    private boolean getUnsupportedOperationException(Consumer<String> method, String arg) {
+        try {
+            method.accept(arg);
+            return false;
+        } catch (UnsupportedOperationException e) {
+            return true;
+        }
+    }
+
+    @Test
+    @DisplayName("Test check for Feed existence")
+    public void feedExistenceTest() {
+        boolean thrown = false;
+        try {
+            RSSConfiguration.getInstance().reconfig("newdummy.rss", null, null);
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+
+        thrown = false;
+        try {
+            RSSConfiguration.getInstance().addRSSFeed("dummy.rss", "dummy.txt");
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+
+        thrown = false;
+        try {
+            RSSConfiguration.getInstance().notifyFeedRead("newdummy.rss", null);
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::delRSSFeed, "newdummy.rss"));
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::isRSSFeedOn, "newdummy.rss"));
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::turnOnRSSFeed, "newdummy.rss"));
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::turnOffRSSFeed, "newdummy.rss"));
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getRSSFeedLastPubDate, "newdummy.rss"));
+    }
+
+    private boolean getIllegalArgumentException(Consumer<String> method, String arg) {
+        try {
+            method.accept(arg);
+            return false;
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
 }

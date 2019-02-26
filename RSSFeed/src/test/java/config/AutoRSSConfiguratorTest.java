@@ -28,7 +28,7 @@ public class AutoRSSConfiguratorTest {
 
     @Test
     @DisplayName("Test of ability to save and load configurations")
-    public void autoReconfig() {
+    public void autoReconfigValidTest() {
         cleanup();
         deleteFile();
 
@@ -77,6 +77,18 @@ public class AutoRSSConfiguratorTest {
 
         cleanup();
         deleteFile();
+    }
+
+    @Test
+    @DisplayName("Test of ability to handle invalid configurations")
+    public void autoConfigInvalidTest() {
+        // TODO
+    }
+
+    @Test
+    @DisplayName("Test of ability to handle partly invalid configurations")
+    public void autoConfigPartlyInvalidTest() {
+        // TODO
     }
 
 }

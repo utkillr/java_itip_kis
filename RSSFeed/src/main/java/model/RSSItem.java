@@ -44,18 +44,25 @@ public class RSSItem {
      * @param source parsed Map from FeedModel
      */
     RSSItem(RSSConfiguration configuration, String feed, Map<String, String> source) throws InvalidObjectException {
+        if (!configuration.getRSSFeeds().containsKey(feed)) {
+            throw new InvalidObjectException("RSS Item is not configured in RSS Configuration");
+        }
+
         if (! source.keySet().containsAll(RSSConfiguration.getRawMandatoryItemFields())) {
             throw new InvalidObjectException("RSS Item does not contains all the mandatory fields");
         }
+
+        if (source.get("pubDate".toLowerCase()) == null) {
+            throw new InvalidObjectException("RSS Item has PubDate set to null");
+        }
+
         this.body = new HashMap<>();
         source.forEach((key, value) -> {
             if (configuration.getItemFields(feed).contains(key)) {
                 body.put(key, value);
             }
         });
-        if (source.get("pubDate".toLowerCase()) == null) {
-            throw new InvalidObjectException("RSS Item has PubDate set to null");
-        }
+
         latestPubDate = PubDateParser.parse(source.get("pubDate".toLowerCase()));
     }
 }

@@ -2,6 +2,7 @@ package parser;
 
 import model.FeedModel;
 import util.Log;
+import util.XMLEventCharactersReader;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -26,6 +27,7 @@ class RSSChannelParser {
      */
     FeedModel parse(XMLEventReader eventReader) {
         FeedModel model = new FeedModel();
+        boolean leaf = false;
         try {
             while (eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();
@@ -40,9 +42,16 @@ class RSSChannelParser {
                     if (localPart.equals(FeedModel.FEED_ITEM)) {
                         // Move inside of <item>
                         eventReader.nextEvent();
-                        model.itemSources.add(new RSSItemParser().parse(eventReader));
+                        try {
+                            model.itemSources.add(new RSSItemParser().parse(eventReader));
+                        } catch (IllegalAccessException e) {
+                            log.error(e.getMessage());
+                        }
                     } else {
-                        model.metaSource.put(localPart.toLowerCase(), FeedModel.getCharacterData(eventReader));
+                        model.metaSource.put(
+                                localPart.toLowerCase(),
+                                XMLEventCharactersReader.getCharacterData(eventReader)
+                        );
                     }
                 } else if (event.isEndElement()){
                     String localPart = event.asEndElement().getName().getLocalPart();

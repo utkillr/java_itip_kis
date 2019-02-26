@@ -24,13 +24,25 @@ public class RSSItemTest {
 
     @After
     public void tearDown() {
-        RSSConfiguration.getInstance().delRSSFeed("dummy.rss");
+        try {
+            RSSConfiguration.getInstance().delRSSFeed("dummy.rss");
+        } catch (Exception ignored) {}
         assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
     }
 
     @Test(expected = InvalidObjectException.class)
+    @DisplayName("Test unconfigured RSSItem invalid initialization")
+    public void initRSSItemUnconfigured() throws InvalidObjectException {
+        tearDown();
+        Map<String, String> source = new HashMap<>();
+        RSSConfiguration.getRawMandatoryItemFields().forEach(field -> source.put(field, "dummy " + field));
+        source.put("pubdate", "Tue, 03 May 2016 11:46:11 +0200");
+        new RSSItem(RSSConfiguration.getInstance(), "dummy.rss", source);
+    }
+
+    @Test(expected = InvalidObjectException.class)
     @DisplayName("Test RSSItem invalid initialization")
-    public void initTestInvalid() throws InvalidObjectException {
+    public void initRSSItemInvalid() throws InvalidObjectException {
         Map<String, String> source = new HashMap<>();
         source.put("description", "dummy description");
         source.put("title", "dummy title");
@@ -47,7 +59,7 @@ public class RSSItemTest {
     }
 
     @Test
-    @DisplayName("Test Latest PubDate logic")
+    @DisplayName("Test RSSItem Latest PubDate logic")
     public void latestPubDateTest() throws InvalidObjectException {
         Map<String, String> source = new HashMap<>();
         RSSConfiguration.getRawMandatoryItemFields().forEach(field -> source.put(field, "dummy " + field));

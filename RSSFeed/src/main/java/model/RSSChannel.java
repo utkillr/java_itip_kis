@@ -55,9 +55,13 @@ public class RSSChannel {
      */
     public RSSChannel(RSSConfiguration configuration, String feed, FeedModel model, final Date latestPubDate)
             throws InvalidObjectException {
+        if (! configuration.getRSSFeeds().containsKey(feed)) {
+            throw new InvalidObjectException("RSS Channel is not configured in RSS Configuration");
+        }
         if (! model.metaSource.keySet().containsAll(RSSConfiguration.getRawMandatoryChannelFields())) {
             throw new InvalidObjectException("RSS Channel does not contains all the mandatory fields");
         }
+
         this.metaBody = new HashMap<>();
         model.metaSource.forEach((key, value) -> {
             if (configuration.getChannelFields(feed).contains(key)) {
@@ -81,6 +85,6 @@ public class RSSChannel {
                 .stream()
                 .map(RSSItem::getLatestPubDate)
                 .min((d1, d2) -> -d1.compareTo(d2))
-                .orElse(null);
+                .orElse(latestPubDate);
     }
 }
