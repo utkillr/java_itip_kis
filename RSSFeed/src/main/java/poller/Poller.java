@@ -1,6 +1,7 @@
 package poller;
 
 import config.RSSConfiguration;
+import lombok.extern.slf4j.Slf4j;
 import model.FeedModel;
 import model.RSSChannel;
 import model.RSSItem;
@@ -25,6 +26,7 @@ import static java.nio.file.StandardOpenOption.APPEND;
  * Runnable class to poll RSS Feeds and write them to associated files
  * with provided polling time
  */
+@Slf4j
 public class Poller implements Runnable {
 
     /**
@@ -55,8 +57,8 @@ public class Poller implements Runnable {
      * In case pubDates are available, filter RSS Items to be newer than latestPubDate.
      * In case no new items arrived, do not write anything.
      *
-     * @param link rss feed link
-     * @param file file name
+     * @param link        rss feed link
+     * @param file        file name
      * @param fromPubDate can be null - pubDate to sort items
      * @return updated latestPubDate
      */
@@ -71,7 +73,7 @@ public class Poller implements Runnable {
             // we do not want to append empty channel description
             if (channel.getItems().size() > 0) {
 
-                System.out.println("Writing new data :)");
+                log.info("Writing new data :)");
 
                 final String feedString = getStringFromMap(
                         channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(), 0
@@ -88,9 +90,9 @@ public class Poller implements Runnable {
 
             return channel.getLatestPubDate();
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            log.error("[ERROR] Malformed URL has occurred: " + e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("[ERROR] Error occurred during writing RSS Feed to the file: " + e.getMessage());
         }
 
         return null;
@@ -99,7 +101,7 @@ public class Poller implements Runnable {
     /**
      * Helper method for getting user-friendly string from channel or item properties map
      *
-     * @param map properties map
+     * @param map           properties map
      * @param availableKeys keys to include
      * @param initialIndent initial indent for all the lines
      * @return User-friendly string ready for output
@@ -131,7 +133,7 @@ public class Poller implements Runnable {
             try {
                 sleep(configuration);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("[ERROR] Thread sleeping is interrupted: " + e.getMessage());
             }
         }
     }
@@ -159,7 +161,7 @@ public class Poller implements Runnable {
             long newTimeToPoll = configuration.getTimeToPoll();
             // If somebody changed poll time, apply it and start sleeping from scratch
             if (newTimeToPoll != currentTimeToPoll) {
-                System.out.println("Time changed from " + currentTimeToPoll + " to " + newTimeToPoll);
+                log.info("Time changed from " + currentTimeToPoll + " to " + newTimeToPoll);
                 currentTimeToPoll = newTimeToPoll;
                 leftTimeToPoll = currentTimeToPoll;
             }

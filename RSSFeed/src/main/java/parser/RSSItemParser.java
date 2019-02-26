@@ -1,5 +1,6 @@
 package parser;
 
+import lombok.extern.slf4j.Slf4j;
 import model.FeedModel;
 
 import javax.xml.stream.XMLEventReader;
@@ -11,6 +12,7 @@ import java.util.Map;
 /**
  * This class implements parsing for item properties
  */
+@Slf4j
 class RSSItemParser {
     /**
      * Iterate over XML and write item properties.
@@ -42,6 +44,7 @@ class RSSItemParser {
                 }
             }
         } catch (XMLStreamException e) {
+            log.error("[ERROR] Error occurred during parsing XML items and writing item properties: " + e.getMessage());
             throw new RuntimeException(e);
         }
         return model;

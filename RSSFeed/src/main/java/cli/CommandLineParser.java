@@ -1,10 +1,13 @@
 package cli;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.*;
 
 /**
  * Parser for CLI Wrapper
  */
+@Slf4j
 public class CommandLineParser {
     private CommandLineManager manager = new CommandLineManager();
 
