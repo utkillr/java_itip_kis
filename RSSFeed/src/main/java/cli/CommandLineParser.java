@@ -1,6 +1,7 @@
 package cli;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Parser for CLI Wrapper
@@ -27,7 +28,10 @@ public class CommandLineParser {
     public int parse(String inputString) {
         Map<String, List<String>> commandMap = new HashMap<>();
         List<String> blocks = Arrays.asList(inputString.split(" "));
-        commandMap.put(blocks.get(0), blocks.size() > 1 ? blocks.subList(1, blocks.size()) : Collections.EMPTY_LIST);
+        blocks = blocks.stream().map(String::trim).filter(block -> !block.isEmpty()).collect(Collectors.toList());
+        if (!blocks.isEmpty()) {
+            commandMap.put(blocks.get(0), blocks.size() > 1 ? blocks.subList(1, blocks.size()) : Collections.EMPTY_LIST);
+        }
 
         // rss
         if (commandMap.containsKey("rss")) {

@@ -324,4 +324,15 @@ public class CommandLineParserTest {
         String cmd = "dummy";
         parser.parse(cmd);
     }
+
+    @Test
+    @DisplayName("Test to parse empty command")
+    public void parseEmptyCmdTest() {
+        CommandLineManager clm = getMock();
+        CommandLineParser parser = new CommandLineParser(clm);
+        assertEquals(0, parser.parse(""));
+        assertEquals(0, parser.parse(" "));
+        assertEquals(0, parser.parse("  "));
+        assertEquals(0, parser.parse("\t"));
+    }
 }

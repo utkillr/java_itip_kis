@@ -23,12 +23,6 @@ public class CommandLineManagerTest {
     }
 
     @Test
-    @DisplayName("Sanity test for help printing")
-    public void printHelpTest() {
-        manager.printHelp();
-    }
-
-    @Test
     @DisplayName("Test of creating file if it exists either not")
     public void creatingFileTest() {
 
@@ -161,5 +155,25 @@ public class CommandLineManagerTest {
 
         manager.setTimeToPoll(timeToPollInvalid);
         assertEquals((Long)RSSConfiguration.timeCheckThreshold, RSSConfiguration.getInstance().getTimeToPoll());
+    }
+
+    @Test
+    @DisplayName("Test to print commands")
+    public void printCommandsTest() {
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+        String link = "dummy.rss";
+        String file = "dummy.txt";
+        manager.associateRssToFile(link, file);
+
+        manager.printHelp();
+        manager.printTimeToPoll();
+        manager.printRss();
+        manager.printAvailableRssItemParams();
+        manager.printAvailableRssChannelParams();
+        manager.printRssItemParams("dummy.rss");
+        manager.printRssChannelParams("dummy.rss");
+
+        manager.dissociateRss(link);
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
     }
 }
