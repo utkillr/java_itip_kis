@@ -16,6 +16,8 @@ public class RSSConfiguration {
      */
     private static final RSSConfiguration configuration = new RSSConfiguration();
 
+    static long defaultTimeToPoll = 60L;
+
     private long timeToPoll;
     private Map<String, String> RSSFeeds;
     private Map<String, LocalFeedInfo> RSSFeedStatus;
@@ -25,7 +27,7 @@ public class RSSConfiguration {
     private RSSConfiguration() {
         RSSFeedChannelFields = new HashMap<>();
         RSSFeedItemFields = new HashMap<>();
-        timeToPoll = 30L;
+        timeToPoll = defaultTimeToPoll;
         RSSFeeds = new HashMap<>();
         RSSFeedStatus = new HashMap<>();
     }

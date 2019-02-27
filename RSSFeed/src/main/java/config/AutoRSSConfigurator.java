@@ -63,8 +63,13 @@ public class AutoRSSConfigurator {
             if (configList.size() < 1) {
                 log.error("Config is invalid");
             } else {
-                long timeToPoll = Long.valueOf(configList.get(0));
-                configuration.setTimeToPoll(timeToPoll);
+                try {
+                    long timeToPoll = Long.valueOf(configList.get(0));
+                    configuration.setTimeToPoll(timeToPoll);
+                } catch (NumberFormatException e) {
+                    log.error("Set default time to poll - Can't parse value: " + configList.get(0));
+                    configuration.setTimeToPoll(RSSConfiguration.defaultTimeToPoll);
+                }
                 if (configList.size() > 1) {
                     for (String line : configList.subList(1, configList.size())) {
                         if (line.isEmpty()) continue;
@@ -84,10 +89,13 @@ public class AutoRSSConfigurator {
                         }
                         // Set pub date
                         String lastPubDate = parsed.get(3);
-                        configuration.notifyFeedRead(
-                                parsed.get(0),
-                                lastPubDate.equals("null") ? null : new Date(Long.valueOf(lastPubDate))
-                        );
+                        try {
+                            Date pubDate = new Date(Long.valueOf(parsed.get(3)));
+                            configuration.notifyFeedRead(parsed.get(0), pubDate);
+                        } catch (NumberFormatException e) {
+                            log.error("Set last pubTime to NULL - Can't parse Long: " + parsed.get(3));
+                            configuration.notifyFeedRead(parsed.get(0), null);
+                        }
                         // Parse and set channel and item fields
                         List<String> channelFields = parseFields(parsed.get(4));
                         List<String> itemFields = parseFields(parsed.get(5));
@@ -95,7 +103,6 @@ public class AutoRSSConfigurator {
                     }
                 }
             }
-
         } catch (IOException e) {
             log.error("Not all the configuration can be written.");
         }
