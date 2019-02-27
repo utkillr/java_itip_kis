@@ -166,8 +166,8 @@ public class CommandLineParser {
         // exit
         } else if (commandMap.containsKey("exit")) {
             return 1;
-        } else {
-            throw new IllegalArgumentException("Inknown argument. Try help");
+        } else if (!commandMap.isEmpty()) {
+            throw new IllegalArgumentException("Unknown argument. Try help");
         }
         return 0;
     }

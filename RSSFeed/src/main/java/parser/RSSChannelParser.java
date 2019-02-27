@@ -25,12 +25,14 @@ class RSSChannelParser {
      * @param eventReader XMLEventReader pointing right after channel tag opening
      * @return parsed FeedModel
      */
-    FeedModel parse(XMLEventReader eventReader) {
+    FeedModel parse(XMLEvent event, XMLEventReader eventReader) throws IllegalAccessException {
         FeedModel model = new FeedModel();
-        boolean leaf = false;
+        if (!(event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(FeedModel.FEED_CHANNEL))) {
+            throw new IllegalAccessException("Not an <channel> tag");
+        }
         try {
             while (eventReader.hasNext()) {
-                XMLEvent event = eventReader.nextEvent();
+                event = eventReader.nextEvent();
                 if (event.isStartElement()) {
                     String prefix = event.asStartElement().getName().getPrefix();
                     if (prefix.equals("atom")) {
@@ -40,29 +42,29 @@ class RSSChannelParser {
                     String localPart = event.asStartElement().getName().getLocalPart();
                     // in case of it is <item>
                     if (localPart.equals(FeedModel.FEED_ITEM)) {
-                        // Move inside of <item>
-                        eventReader.nextEvent();
                         try {
-                            model.itemSources.add(new RSSItemParser().parse(eventReader));
+                            model.itemSources.add(new RSSItemParser().parse(event, eventReader));
                         } catch (IllegalAccessException e) {
                             log.error(e.getMessage());
                         }
                     } else {
-                        model.metaSource.put(
-                                localPart.toLowerCase(),
-                                XMLEventCharactersReader.getCharacterData(eventReader)
-                        );
+                        try {
+                            model.metaSource.put(
+                                    localPart.toLowerCase(),
+                                    XMLEventCharactersReader.getCharacterData(event, eventReader)
+                            );
+                        } catch (IllegalAccessException e) {
+                            log.error(e.getMessage());
+                        }
                     }
                 } else if (event.isEndElement()){
-                    String localPart = event.asEndElement().getName().getLocalPart();
-                    if (localPart.equals(FeedModel.FEED_CHANNEL)) {
+                    if (event.asEndElement().getName().getLocalPart().equals(FeedModel.FEED_CHANNEL)) {
                         break;
                     }
                 }
             }
         } catch (XMLStreamException e) {
             log.error("Error occurred during parsing XML items and writing channel properties: " + e.getMessage());
-            throw new RuntimeException(e);
         }
         return model;
     }

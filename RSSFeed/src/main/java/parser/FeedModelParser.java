@@ -21,7 +21,7 @@ public class FeedModelParser {
      * @return model which is returned from RSSChannelParser
      */
     public FeedModel parse(InputStream in) {
-        FeedModel model = null;
+        FeedModel model = new FeedModel();
         try {
             XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
@@ -30,14 +30,16 @@ public class FeedModelParser {
                 if (event.isStartElement()) {
                     String localPart = event.asStartElement().getName().getLocalPart();
                     if (localPart.equals(FeedModel.FEED_CHANNEL)) {
-                        // Move inside of <channel>
-                        model = new RSSChannelParser().parse(eventReader);
+                        model = new RSSChannelParser().parse(event, eventReader);
+                        // Break to ignore anything beyond channel
+                        break;
                     }
                 }
             }
         } catch (XMLStreamException e) {
             log.error("Error occurred during parsing rss: " + e.getMessage());
-            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            log.error(e.getMessage());
         }
         return model;
     }

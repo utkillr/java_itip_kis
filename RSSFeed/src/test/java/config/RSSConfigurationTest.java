@@ -104,7 +104,7 @@ public class RSSConfigurationTest {
         RSSConfiguration.getInstance().setTimeToPoll(100L);
         assertEquals((Long)100L, RSSConfiguration.getInstance().getTimeToPoll());
         RSSConfiguration.getInstance().setTimeToPoll(1L);
-        assertEquals((Long)Poller.timeCheckThreshold, RSSConfiguration.getInstance().getTimeToPoll());
+        assertEquals((Long)RSSConfiguration.timeCheckThreshold, RSSConfiguration.getInstance().getTimeToPoll());
         RSSConfiguration.getInstance().setTimeToPoll(100L);
         assertEquals((Long)100L, RSSConfiguration.getInstance().getTimeToPoll());
     }

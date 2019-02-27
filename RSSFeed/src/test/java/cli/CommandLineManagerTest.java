@@ -160,6 +160,6 @@ public class CommandLineManagerTest {
         assertEquals(timeToPollSecond, RSSConfiguration.getInstance().getTimeToPoll());
 
         manager.setTimeToPoll(timeToPollInvalid);
-        assertEquals((Long)Poller.timeCheckThreshold, RSSConfiguration.getInstance().getTimeToPoll());
+        assertEquals((Long)RSSConfiguration.timeCheckThreshold, RSSConfiguration.getInstance().getTimeToPoll());
     }
 }

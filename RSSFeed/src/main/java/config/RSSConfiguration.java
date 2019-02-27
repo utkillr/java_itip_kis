@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * Configuration singleton for RSS Feed, Items and whole application
  */
 public class RSSConfiguration {
-
+    public static long timeCheckThreshold = 5;
     /**
      * Singleton field
      */
@@ -142,7 +142,7 @@ public class RSSConfiguration {
      * @param time new time to poll
      */
     public void setTimeToPoll(Long time) {
-        this.timeToPoll = time > Poller.timeCheckThreshold ? time : Poller.timeCheckThreshold;
+        this.timeToPoll = time > timeCheckThreshold ? time : timeCheckThreshold;
     }
 
     /**

@@ -32,7 +32,6 @@ public class Poller implements Runnable {
     /**
      * Time to sleep between checks for time to poll modifications
      */
-    public static long timeCheckThreshold = 5;
 
     private boolean running;
 
@@ -155,7 +154,7 @@ public class Poller implements Runnable {
     private void sleep(RSSConfiguration configuration) throws InterruptedException {
         long currentTimeToPoll = configuration.getTimeToPoll();
         long leftTimeToPoll = currentTimeToPoll;
-        while (leftTimeToPoll > timeCheckThreshold) {
+        while (leftTimeToPoll > RSSConfiguration.timeCheckThreshold) {
             long newTimeToPoll = configuration.getTimeToPoll();
             // If somebody changed poll time, apply it and start sleeping from scratch
             if (newTimeToPoll != currentTimeToPoll) {
@@ -163,9 +162,9 @@ public class Poller implements Runnable {
                 leftTimeToPoll = currentTimeToPoll;
             }
             if (running) {
-                TimeUnit.SECONDS.sleep(timeCheckThreshold);
+                TimeUnit.SECONDS.sleep(RSSConfiguration.timeCheckThreshold);
             }
-            leftTimeToPoll -= timeCheckThreshold;
+            leftTimeToPoll -= RSSConfiguration.timeCheckThreshold;
         }
         if (running) {
             TimeUnit.SECONDS.sleep(leftTimeToPoll);

@@ -25,35 +25,30 @@ class RSSItemParser {
      * @param eventReader XMLEventReader pointing right after item tag opening
      * @return map: ItemProperty -> value
      */
-    Map<String, String> parse(XMLEventReader eventReader) throws IllegalAccessException {
+    Map<String, String> parse(XMLEvent event, XMLEventReader eventReader) throws IllegalAccessException {
         Map<String, String> model = new HashMap<>();
-        boolean leaf = false;
+        if (!(event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(FeedModel.FEED_ITEM))) {
+            throw new IllegalAccessException("Not an <item> tag");
+        }
         try {
             while (eventReader.hasNext()) {
-                XMLEvent event = eventReader.nextEvent();
+                event = eventReader.nextEvent();
                 if (event.isStartElement()) {
-                    if (leaf) {
-                        throw new IllegalAccessException("Can't parse XML inside of RSS Item");
-                    }
-                    leaf = true;
                     String prefix = event.asStartElement().getName().getPrefix();
                     if (prefix.equals("atom")) {
                         // ignore atom fields for now
                         continue;
                     }
                     String localPart = event.asStartElement().getName().getLocalPart();
-                    model.put(localPart.toLowerCase(), XMLEventCharactersReader.getCharacterData(eventReader));
+                    model.put(localPart.toLowerCase(), XMLEventCharactersReader.getCharacterData(event, eventReader));
                 } else if (event.isEndElement()) {
-                    leaf = false;
-                    String localPart = event.asEndElement().getName().getLocalPart();
-                    if (localPart.equals(FeedModel.FEED_ITEM)) {
+                    if (event.asEndElement().getName().getLocalPart().equals(FeedModel.FEED_ITEM)) {
                         break;
                     }
                 }
             }
         } catch (XMLStreamException e) {
             log.error("Error occurred during parsing XML items and writing item properties: " + e.getMessage());
-            throw new RuntimeException(e);
         }
         return model;
     }

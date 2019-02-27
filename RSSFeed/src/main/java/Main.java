@@ -33,11 +33,15 @@ public class Main {
         );
 
         while (true) {
-            int result = cli.parse(scanner.nextLine());
-            // Graceful thread stop
-            if (result == 1) {
-                poller.stop();
-                break;
+            try {
+                int result = cli.parse(scanner.nextLine());
+                // Graceful thread stop
+                if (result == 1) {
+                    poller.stop();
+                    break;
+                }
+            } catch (IllegalArgumentException e) {
+                log.error(e.getMessage());
             }
         }
 
