@@ -1,12 +1,13 @@
 package poller;
 
 import config.RSSConfiguration;
-import lombok.extern.slf4j.Slf4j;
 import model.FeedModel;
 import model.RSSChannel;
 import model.RSSItem;
 import parser.FeedModelParser;
+import util.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -26,15 +27,14 @@ import static java.nio.file.StandardOpenOption.APPEND;
  * Runnable class to poll RSS Feeds and write them to associated files
  * with provided polling time
  */
-@Slf4j
 public class Poller implements Runnable {
+    private static Log log = new Log(Poller.class.getName(), System.out);
 
     /**
      * Time to sleep between checks for time to poll modifications
      */
-    private static long timeCheckThreshold = 5;
 
-    private boolean running;
+    private boolean running = true;
 
     /**
      * Polling function.
@@ -43,59 +43,74 @@ public class Poller implements Runnable {
      *
      * @param configuration instance of RSSConfiguration
      */
-    public static void poll(RSSConfiguration configuration) {
+    void poll(RSSConfiguration configuration) {
         configuration.getRSSFeeds().forEach((feed, file) -> {
             if (configuration.isRSSFeedOn(feed)) {
-                Date newPubDate = printRSSFeedToFile(feed, file, configuration.getRSSFeedLastPubDate(feed));
-                configuration.notifyFeedRead(feed, newPubDate);
+                try {
+                    InputStream in = new URL(feed).openStream();
+                    Date newPubDate = handleRSSFeed(in, feed, file);
+                    configuration.notifyFeedRead(feed, newPubDate);
+                } catch (IllegalArgumentException e) {
+                    log.error(e.getMessage());
+                } catch (MalformedURLException e) {
+                    log.error("Can't read URL. " + e.getMessage());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
 
     /**
-     * Print RSS Feed to the file.
+     * Handle and Print RSS Feed to the file.
      * In case pubDates are available, filter RSS Items to be newer than latestPubDate.
      * In case no new items arrived, do not write anything.
      *
      * @param link        rss feed link
      * @param file        file name
-     * @param fromPubDate can be null - pubDate to sort items
      * @return updated latestPubDate
      */
-    public static Date printRSSFeedToFile(String link, String file, Date fromPubDate) {
+    Date handleRSSFeed(InputStream in, String link, String file) {
         try {
-            URL url = new URL(link);
-            InputStream in = url.openStream();
             FeedModel model = new FeedModelParser().parse(in);
             Path path = Paths.get(file);
-            RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), model, fromPubDate);
-
-            // we do not want to append empty channel description
-            if (channel.getItems().size() > 0) {
-
-                log.info("Writing new data :)");
-
-                final String feedString = getStringFromMap(
-                        channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(), 0
-                );
-                Files.write(path, feedString.getBytes(), APPEND);
-
-                for (RSSItem item : channel.getItems()) {
-                    final String itemString = getStringFromMap(
-                            item.getBody(), RSSConfiguration.getInstance().getItemFields(), 1
-                    );
-                    Files.write(path, itemString.getBytes(), APPEND);
-                }
-            }
-
+            RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), link, model);
+            printRSSFeedToFile(channel, link, path);
             return channel.getLatestPubDate();
-        } catch (MalformedURLException e) {
-            log.error("[ERROR] Malformed URL has occurred: " + e.getMessage());
         } catch (IOException e) {
-            log.error("[ERROR] Error occurred during writing RSS Feed to the file: " + e.getMessage());
+            log.error("Error occurred during writing RSS Feed to the file: " + e.getMessage());
         }
 
         return null;
+    }
+
+    /**
+     * Print RSS Feed to the file.
+     *
+     * @param link        rss feed link
+     * @param path        path to file
+     * @return updated latestPubDate
+     */
+    void printRSSFeedToFile(RSSChannel channel, String link, Path path) throws IOException {
+        // we do not want to append empty channel description
+        if (channel.getItems().size() > 0) {
+
+            final String feedString = getStringFromMap(
+                    channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(link), 0
+            );
+            File file = path.toFile();
+            if (!file.exists() && !file.isDirectory()) {
+                file.createNewFile();
+            }
+            Files.write(path, feedString.getBytes(), APPEND);
+
+            for (RSSItem item : channel.getItems()) {
+                final String itemString = getStringFromMap(
+                        item.getBody(), RSSConfiguration.getInstance().getItemFields(link), 1
+                );
+                Files.write(path, itemString.getBytes(), APPEND);
+            }
+        }
     }
 
     /**
@@ -106,7 +121,7 @@ public class Poller implements Runnable {
      * @param initialIndent initial indent for all the lines
      * @return User-friendly string ready for output
      */
-    private static String getStringFromMap(Map<String, String> map, List<String> availableKeys, int initialIndent) {
+    static String getStringFromMap(Map<String, String> map, List<String> availableKeys, int initialIndent) {
         StringBuilder indentation = new StringBuilder();
         for (int i = 0; i < initialIndent; i++) {
             indentation.append("\t");
@@ -126,14 +141,13 @@ public class Poller implements Runnable {
      */
     @Override
     public void run() {
-        running = true;
         RSSConfiguration configuration = RSSConfiguration.getInstance();
         while (running) {
             poll(configuration);
             try {
                 sleep(configuration);
             } catch (InterruptedException e) {
-                log.error("[ERROR] Thread sleeping is interrupted: " + e.getMessage());
+                log.error("Thread is interrupted during sleep: " + e.getMessage());
             }
         }
     }
@@ -157,18 +171,17 @@ public class Poller implements Runnable {
     private void sleep(RSSConfiguration configuration) throws InterruptedException {
         long currentTimeToPoll = configuration.getTimeToPoll();
         long leftTimeToPoll = currentTimeToPoll;
-        while (leftTimeToPoll > timeCheckThreshold) {
+        while (leftTimeToPoll > RSSConfiguration.timeCheckThreshold) {
             long newTimeToPoll = configuration.getTimeToPoll();
             // If somebody changed poll time, apply it and start sleeping from scratch
             if (newTimeToPoll != currentTimeToPoll) {
-                log.info("Time changed from " + currentTimeToPoll + " to " + newTimeToPoll);
                 currentTimeToPoll = newTimeToPoll;
                 leftTimeToPoll = currentTimeToPoll;
             }
             if (running) {
-                TimeUnit.SECONDS.sleep(timeCheckThreshold);
+                TimeUnit.SECONDS.sleep(RSSConfiguration.timeCheckThreshold);
             }
-            leftTimeToPoll -= timeCheckThreshold;
+            leftTimeToPoll -= RSSConfiguration.timeCheckThreshold;
         }
         if (running) {
             TimeUnit.SECONDS.sleep(leftTimeToPoll);

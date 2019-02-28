@@ -3,15 +3,18 @@ package model;
 import config.RSSConfiguration;
 import util.PubDateParser;
 
+import java.io.InvalidObjectException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * This class represents RSS Channel (Atom syntax is ignored for now).
  */
 public class RSSItem {
 
+    // Actually HashMap to support sorting
     private Map<String, String> body;
     private Date latestPubDate;
 
@@ -39,19 +42,29 @@ public class RSSItem {
      * Parse latestPubDate
      *
      * @param configuration RSSConfiguration instance
+     * @param feed Link to RSS feed
      * @param source parsed Map from FeedModel
      */
-    RSSItem(RSSConfiguration configuration, Map<String, String> source) {
+    RSSItem(RSSConfiguration configuration, String feed, Map<String, String> source) throws InvalidObjectException {
+        if (!configuration.getRSSFeeds().containsKey(feed)) {
+            throw new InvalidObjectException("RSS Item is not configured in RSS Configuration");
+        }
+
+        if (! source.keySet().containsAll(RSSConfiguration.getRawMandatoryItemFields())) {
+            throw new InvalidObjectException("RSS Item does not contains all the mandatory fields");
+        }
+
+        if (source.get("pubDate".toLowerCase()) == null) {
+            throw new InvalidObjectException("RSS Item has PubDate set to null");
+        }
+
         this.body = new HashMap<>();
         source.forEach((key, value) -> {
-            if (configuration.getItemFields().contains(key)) {
+            if (configuration.getItemFields(feed).contains(key.toLowerCase())) {
                 body.put(key, value);
             }
         });
-        if (source.containsKey("pubDate".toLowerCase())) {
-            latestPubDate = PubDateParser.parse(source.get("pubDate".toLowerCase()));
-        } else {
-            latestPubDate = null;
-        }
+
+        latestPubDate = PubDateParser.parse(source.get("pubDate".toLowerCase()));
     }
 }

@@ -1,37 +1,58 @@
 import cli.CommandLineParser;
-import lombok.extern.slf4j.Slf4j;
+import config.AutoRSSConfigurator;
 import poller.Poller;
+import util.Log;
 
 import java.util.Scanner;
 
-@Slf4j
 public class Main {
+    private static Log log = new Log(Main.class.getName(), System.out);
+
     public static void main(String[] args) {
+
+        AutoRSSConfigurator.loadRSSConfiguration();
 
         // Initialize CLI
         CommandLineParser cli = new CommandLineParser();
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Use -h for help\n");
+        log.info("Use 'help' for help\n");
 
         // Initialize thread and start it
         Poller poller = new Poller();
         Thread pollingThread = new Thread(poller, "Poller");
         pollingThread.start();
 
+        // Save in case of external shutdown
+        Runtime.getRuntime().addShutdownHook(
+                new Thread(() -> {
+                    log.warn("Trying to save configuration");
+                    poller.stop();
+                    AutoRSSConfigurator.saveRSSConfiguration();
+                    log.warn("Configuration saved");
+                })
+        );
+
         while (true) {
-            int result = cli.parse(scanner.nextLine());
-            // Graceful thread stop
-            if (result != 0) {
-                poller.stop();
-                break;
+            try {
+                int result = cli.parse(scanner.nextLine());
+                // Graceful thread stop
+                if (result == 1) {
+                    poller.stop();
+                    break;
+                }
+            } catch (IllegalArgumentException e) {
+                log.error(e.getMessage());
             }
         }
 
         try {
             // Graceful shutdown
+            log.info("Waiting for polling thread to stop...");
             pollingThread.join();
         } catch (InterruptedException e) {
-            log.error("[ERROR] Waits for thread dieing is interrupted: " + e.getMessage());
+            log.error("Waiting for thread is interrupted: " + e.getMessage());
         }
+
+        AutoRSSConfigurator.saveRSSConfiguration();
     }
 }
