@@ -4,9 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
-import poller.Poller;
 
-import java.rmi.server.RMIServerSocketFactory;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -161,6 +159,8 @@ public class RSSConfigurationTest {
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::turnOnRSSFeed, "newdummy.rss"));
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::turnOffRSSFeed, "newdummy.rss"));
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getRSSFeedLastPubDate, "newdummy.rss"));
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getChannelFields, "newdummy.rss"));
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getItemFields, "newdummy.rss"));
     }
 
     private boolean getIllegalArgumentException(Consumer<String> method, String arg) {

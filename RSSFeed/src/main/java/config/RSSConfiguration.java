@@ -1,7 +1,5 @@
 package config;
 
-import poller.Poller;
-
 import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,7 +73,11 @@ public class RSSConfiguration {
      * @return unmodifiable list of configured item fields
      */
     public List<String> getItemFields(String feed) {
-        return Collections.unmodifiableList(RSSFeedItemFields.get((feed)));
+        if (RSSFeedItemFields.containsKey(feed)) {
+            return Collections.unmodifiableList(RSSFeedItemFields.get((feed)));
+        } else {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
+        }
     }
 
     /**
@@ -85,7 +87,11 @@ public class RSSConfiguration {
      * @return unmodifiable list of configured channel fields
      */
     public List<String> getChannelFields(String feed) {
-        return Collections.unmodifiableList(RSSFeedChannelFields.get((feed)));
+        if (RSSFeedChannelFields.containsKey(feed)) {
+            return Collections.unmodifiableList(RSSFeedChannelFields.get(feed));
+        } else {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
+        }
     }
 
     public void setRSSFeedFile(String feed, String file) {

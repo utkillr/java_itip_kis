@@ -7,12 +7,14 @@ import java.io.InvalidObjectException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * This class represents RSS Channel (Atom syntax is ignored for now).
  */
 public class RSSItem {
 
+    // Actually HashMap to support sorting
     private Map<String, String> body;
     private Date latestPubDate;
 
@@ -58,7 +60,7 @@ public class RSSItem {
 
         this.body = new HashMap<>();
         source.forEach((key, value) -> {
-            if (configuration.getItemFields(feed).contains(key)) {
+            if (configuration.getItemFields(feed).contains(key.toLowerCase())) {
                 body.put(key, value);
             }
         });

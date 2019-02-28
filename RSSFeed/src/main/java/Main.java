@@ -47,6 +47,7 @@ public class Main {
 
         try {
             // Graceful shutdown
+            log.info("Waiting for polling thread to stop...");
             pollingThread.join();
         } catch (InterruptedException e) {
             log.error("Waiting for thread is interrupted: " + e.getMessage());

@@ -27,6 +27,10 @@ public class Log {
         log(msg, "RESPONSE");
     }
 
+    public void emptyLine() {
+        out.println();
+    }
+
     private void log(String msg, String severity) {
         synchronized (out) {
             out.println(String.format("[%s]: [%s] %s", context, severity, msg));

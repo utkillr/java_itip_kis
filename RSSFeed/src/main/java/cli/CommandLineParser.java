@@ -169,6 +169,7 @@ public class CommandLineParser {
             manager.printHelp();
         // exit
         } else if (commandMap.containsKey("exit")) {
+            manager.prettyPrint("Exiting...");
             return 1;
         } else if (!commandMap.isEmpty()) {
             throw new IllegalArgumentException("Unknown argument. Try help");

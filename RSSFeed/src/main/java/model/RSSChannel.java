@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
  */
 public class RSSChannel {
 
+    // Actually HashMap to support sorting
     private Map<String, String> metaBody;
     private List<RSSItem> items;
     private Date latestPubDate;
@@ -51,9 +52,8 @@ public class RSSChannel {
      * @param configuration RSSConfiguration instance
      * @param feed Link to RSS feed
      * @param model parsed FeedModel
-     * @param latestPubDate can be null - needed for filtering old items
      */
-    public RSSChannel(RSSConfiguration configuration, String feed, FeedModel model, final Date latestPubDate)
+    public RSSChannel(RSSConfiguration configuration, String feed, FeedModel model)
             throws InvalidObjectException {
         if (! configuration.getRSSFeeds().containsKey(feed)) {
             throw new InvalidObjectException("RSS Channel is not configured in RSS Configuration");
@@ -62,9 +62,11 @@ public class RSSChannel {
             throw new InvalidObjectException("RSS Channel does not contains all the mandatory fields");
         }
 
+        latestPubDate = RSSConfiguration.getInstance().getRSSFeedLastPubDate(feed);
+
         this.metaBody = new HashMap<>();
         model.metaSource.forEach((key, value) -> {
-            if (configuration.getChannelFields(feed).contains(key)) {
+            if (configuration.getChannelFields(feed).contains(key.toLowerCase())) {
                 metaBody.put(key, value);
             }
         });
@@ -85,6 +87,6 @@ public class RSSChannel {
                 .stream()
                 .map(RSSItem::getLatestPubDate)
                 .min((d1, d2) -> -d1.compareTo(d2))
-                .orElse(latestPubDate);
+                .orElse(this.latestPubDate);
     }
 }

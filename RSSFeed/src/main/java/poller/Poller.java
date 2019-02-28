@@ -7,6 +7,7 @@ import model.RSSItem;
 import parser.FeedModelParser;
 import util.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -33,7 +34,7 @@ public class Poller implements Runnable {
      * Time to sleep between checks for time to poll modifications
      */
 
-    private boolean running;
+    private boolean running = true;
 
     /**
      * Polling function.
@@ -42,57 +43,74 @@ public class Poller implements Runnable {
      *
      * @param configuration instance of RSSConfiguration
      */
-    public static void poll(RSSConfiguration configuration) {
+    void poll(RSSConfiguration configuration) {
         configuration.getRSSFeeds().forEach((feed, file) -> {
             if (configuration.isRSSFeedOn(feed)) {
-                Date newPubDate = printRSSFeedToFile(feed, file, configuration.getRSSFeedLastPubDate(feed));
-                configuration.notifyFeedRead(feed, newPubDate);
+                try {
+                    InputStream in = new URL(feed).openStream();
+                    Date newPubDate = handleRSSFeed(in, feed, file);
+                    configuration.notifyFeedRead(feed, newPubDate);
+                } catch (IllegalArgumentException e) {
+                    log.error(e.getMessage());
+                } catch (MalformedURLException e) {
+                    log.error("Can't read URL. " + e.getMessage());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
 
     /**
-     * Print RSS Feed to the file.
+     * Handle and Print RSS Feed to the file.
      * In case pubDates are available, filter RSS Items to be newer than latestPubDate.
      * In case no new items arrived, do not write anything.
      *
      * @param link        rss feed link
      * @param file        file name
-     * @param fromPubDate can be null - pubDate to sort items
      * @return updated latestPubDate
      */
-    public static Date printRSSFeedToFile(String link, String file, Date fromPubDate) {
+    Date handleRSSFeed(InputStream in, String link, String file) {
         try {
-            URL url = new URL(link);
-            InputStream in = url.openStream();
             FeedModel model = new FeedModelParser().parse(in);
             Path path = Paths.get(file);
-            RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), link, model, fromPubDate);
-
-            // we do not want to append empty channel description
-            if (channel.getItems().size() > 0) {
-
-                final String feedString = getStringFromMap(
-                        channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(link), 0
-                );
-                Files.write(path, feedString.getBytes(), APPEND);
-
-                for (RSSItem item : channel.getItems()) {
-                    final String itemString = getStringFromMap(
-                            item.getBody(), RSSConfiguration.getInstance().getItemFields(link), 1
-                    );
-                    Files.write(path, itemString.getBytes(), APPEND);
-                }
-            }
-
+            RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), link, model);
+            printRSSFeedToFile(channel, link, path);
             return channel.getLatestPubDate();
-        } catch (MalformedURLException e) {
-            log.error("Malformed URL: " + e.getMessage());
         } catch (IOException e) {
             log.error("Error occurred during writing RSS Feed to the file: " + e.getMessage());
         }
 
         return null;
+    }
+
+    /**
+     * Print RSS Feed to the file.
+     *
+     * @param link        rss feed link
+     * @param path        path to file
+     * @return updated latestPubDate
+     */
+    void printRSSFeedToFile(RSSChannel channel, String link, Path path) throws IOException {
+        // we do not want to append empty channel description
+        if (channel.getItems().size() > 0) {
+
+            final String feedString = getStringFromMap(
+                    channel.getMetaBody(), RSSConfiguration.getInstance().getChannelFields(link), 0
+            );
+            File file = path.toFile();
+            if (!file.exists() && !file.isDirectory()) {
+                file.createNewFile();
+            }
+            Files.write(path, feedString.getBytes(), APPEND);
+
+            for (RSSItem item : channel.getItems()) {
+                final String itemString = getStringFromMap(
+                        item.getBody(), RSSConfiguration.getInstance().getItemFields(link), 1
+                );
+                Files.write(path, itemString.getBytes(), APPEND);
+            }
+        }
     }
 
     /**
@@ -103,7 +121,7 @@ public class Poller implements Runnable {
      * @param initialIndent initial indent for all the lines
      * @return User-friendly string ready for output
      */
-    private static String getStringFromMap(Map<String, String> map, List<String> availableKeys, int initialIndent) {
+    static String getStringFromMap(Map<String, String> map, List<String> availableKeys, int initialIndent) {
         StringBuilder indentation = new StringBuilder();
         for (int i = 0; i < initialIndent; i++) {
             indentation.append("\t");
@@ -123,7 +141,6 @@ public class Poller implements Runnable {
      */
     @Override
     public void run() {
-        running = true;
         RSSConfiguration configuration = RSSConfiguration.getInstance();
         while (running) {
             poll(configuration);

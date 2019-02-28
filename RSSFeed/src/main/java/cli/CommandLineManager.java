@@ -244,10 +244,10 @@ class CommandLineManager {
      * @param messages Strings to output line by line
      */
     void prettyPrint(String... messages) {
-        StringBuilder builder = new StringBuilder();
         for (String message : messages) {
-            builder.append("\t").append(message).append("\n");
+            log.response(message);
         }
-        log.response(builder.toString());
+        log.emptyLine();
+
     }
 }

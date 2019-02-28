@@ -49,7 +49,7 @@ public class RSSChannelTest {
         RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> itemSource.put(field, "dummy " + field));
         itemSource.put("pubdate", "Tue, 03 May 2016 11:46:11 +0200");
         model.itemSources.add(itemSource);
-        new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model, null);
+        new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class RSSChannelTest {
         itemSource.put("description", "dummy description");
         itemSource.put("title", "dummy title");
         model.itemSources.add(itemSource);
-        new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model, null);
+        new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class RSSChannelTest {
         RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> itemSource.put(field, "dummy " + field));
         itemSource.put("pubdate", "Tue, 03 May 2016 11:46:11 +0200");
         model.itemSources.add(itemSource);
-        new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model, null);
+        new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
     }
 
     @Test
@@ -97,13 +97,14 @@ public class RSSChannelTest {
         itemSource2.put("pubdate", "Tue, 04 May 2016 11:46:11 +0200");
 
         model.itemSources.add(itemSource1);
+
+        RSSChannel channel1 = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
+        assertEquals(PubDateParser.parse("Tue, 03 May 2016 11:46:11 +0200"), channel1.getLatestPubDate());
+
         model.itemSources.add(itemSource2);
 
-        RSSChannel channel1 = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model, null);
-        assertEquals(PubDateParser.parse("Tue, 04 May 2016 11:46:11 +0200"), channel1.getLatestPubDate());
-
-        RSSChannel channel2 = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model, PubDateParser.parse("Tue, 05 May 2016 11:46:11 +0200"));
-        assertEquals(PubDateParser.parse("Tue, 05 May 2016 11:46:11 +0200"), channel2.getLatestPubDate());
+        RSSChannel channel2 = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
+        assertEquals(PubDateParser.parse("Tue, 04 May 2016 11:46:11 +0200"), channel2.getLatestPubDate());
     }
 
     @Test
@@ -119,11 +120,28 @@ public class RSSChannelTest {
 
         RSSConfiguration.getInstance().reconfig("dummy.rss", null, new ArrayList<>(model.metaSource.keySet()));
 
-        RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model, null);
+        RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
         assertEquals(PubDateParser.parse("Tue, 03 May 2016 11:46:11 +0200"), channel.getLatestPubDate());
         RSSConfiguration.getInstance().getChannelFields("dummy.rss")
                 .stream()
                 .filter(field -> !field.equals("pubdate"))
                 .forEach(field -> assertEquals("dummy " + field, channel.getMetaBody().get(field)));
+    }
+
+    @Test
+    @DisplayName("Test RSSChannel throws when there is no new items")
+    public void allItemsOlderThanLatestPubDateTest() throws InvalidObjectException {
+        FeedModel model = new FeedModel();
+        RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> model.metaSource.put(field, "dummy " + field));
+
+        Map<String, String> itemSource1 = new HashMap<>();
+        RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> itemSource1.put(field, "dummy " + field));
+        itemSource1.put("pubdate", "Tue, 03 May 2016 11:46:11 +0200");
+
+        model.itemSources.add(itemSource1);
+        RSSConfiguration.getInstance().notifyFeedRead("dummy.rss", PubDateParser.parse("Tue, 04 May 2016 11:46:11 +0200"));
+
+        RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
+        assertEquals(0, channel.getItems().size());
     }
 }

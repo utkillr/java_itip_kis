@@ -1,6 +1,5 @@
 package parser;
 
-import model.FeedModel;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 

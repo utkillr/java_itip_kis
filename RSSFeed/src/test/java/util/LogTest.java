@@ -11,12 +11,14 @@ import static org.junit.Assert.*;
 
 public class LogTest {
 
-
-
     @Before
     public void setUp() {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         System.setOut(new PrintStream(bo));
+    }
+
+    private String getLastStringAfterSubstring(String string, String substring) {
+        return string.substring(string.indexOf(substring) + substring.length());
     }
 
     @Test
@@ -28,21 +30,31 @@ public class LogTest {
         log.info("info");
         bo.flush();
         String allWrittenLines = new String(bo.toByteArray());
-        assertTrue(allWrittenLines.contains("[TEST]: [INFO] info"));
+        String expected = "[TEST]: [INFO] info\r\n";
+        assertEquals(expected, allWrittenLines);
 
         log.response("response");
         bo.flush();
-        allWrittenLines = new String(bo.toByteArray());
-        assertTrue(allWrittenLines.contains("[TEST]: [RESPONSE] response"));
+        allWrittenLines = getLastStringAfterSubstring(new String(bo.toByteArray()), expected);
+        expected = "[TEST]: [RESPONSE] response\r\n";
+        assertEquals(expected, allWrittenLines);
 
         log.warn("warn");
         bo.flush();
-        allWrittenLines = new String(bo.toByteArray());
-        assertTrue(allWrittenLines.contains("[TEST]: [WARN] warn"));
+        allWrittenLines = getLastStringAfterSubstring(new String(bo.toByteArray()), expected);
+        expected = "[TEST]: [WARN] warn\r\n";
+        assertEquals(expected, allWrittenLines);
 
         log.error("error");
         bo.flush();
-        allWrittenLines = new String(bo.toByteArray());
-        assertTrue(allWrittenLines.contains("[TEST]: [ERROR] error"));
+        allWrittenLines = getLastStringAfterSubstring(new String(bo.toByteArray()), expected);
+        expected = "[TEST]: [ERROR] error\r\n";
+        assertEquals(expected, allWrittenLines);
+
+        log.emptyLine();
+        bo.flush();
+        allWrittenLines = getLastStringAfterSubstring(new String(bo.toByteArray()), expected);
+        expected = "\r\n";
+        assertEquals(expected, allWrittenLines);
     }
 }
