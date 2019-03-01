@@ -210,4 +210,14 @@ public class RSSConfigurationTest {
             return true;
         }
     }
+
+    @Test
+    @DisplayName("Test Atom to RSS conversion")
+    public void atomToRssTest() {
+        assertEquals("pubdate", RSSConfiguration.atomToRSS("atom:published"));
+        assertEquals("pubdate", RSSConfiguration.atomToRSS("atom:updated"));
+        assertEquals("description", RSSConfiguration.atomToRSS("atom:content"));
+        assertEquals("copyright", RSSConfiguration.atomToRSS("atom:rights"));
+        assertEquals("", RSSConfiguration.atomToRSS("atom:dummy"));
+    }
 }

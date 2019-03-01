@@ -29,7 +29,7 @@ public class FeedModelParser {
                 XMLEvent event = eventReader.nextEvent();
                 if (event.isStartElement()) {
                     String localPart = event.asStartElement().getName().getLocalPart();
-                    if (localPart.equals(FeedModel.FEED_CHANNEL)) {
+                    if (localPart.equals(FeedModel.FEED_CHANNEL) || localPart.equals((FeedModel.ATOM_CHANNEL))) {
                         model = new RSSChannelParser().parse(event, eventReader);
                         // Break to ignore anything beyond channel
                         break;

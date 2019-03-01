@@ -1,5 +1,6 @@
 package parser;
 
+import javafx.util.Pair;
 import model.FeedModel;
 import util.Log;
 import util.XMLEventCharactersReader;
@@ -27,7 +28,10 @@ class RSSItemParser {
      */
     Map<String, String> parse(XMLEvent event, XMLEventReader eventReader) throws IllegalAccessException {
         Map<String, String> model = new HashMap<>();
-        if (!(event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(FeedModel.FEED_ITEM))) {
+        if (!(event.isStartElement() && (
+                event.asStartElement().getName().getLocalPart().equals(FeedModel.FEED_ITEM)
+                        || event.asStartElement().getName().getLocalPart().equals(FeedModel.ATOM_ITEM)
+        ))) {
             throw new IllegalAccessException("Not an <item> tag");
         }
         try {
@@ -35,11 +39,14 @@ class RSSItemParser {
                 event = eventReader.nextEvent();
                 if (event.isStartElement()) {
                     String prefix = event.asStartElement().getName().getPrefix();
+                    String localPart = event.asStartElement().getName().getLocalPart();
                     if (prefix.equals("atom")) {
-                        // ignore atom fields for now
+                        model.put(
+                                (prefix + ":" + localPart).toLowerCase(),
+                                new AtomEventParser().parse(event, eventReader)
+                        );
                         continue;
                     }
-                    String localPart = event.asStartElement().getName().getLocalPart();
                     model.put(localPart.toLowerCase(), XMLEventCharactersReader.getCharacterData(event, eventReader));
                 } else if (event.isEndElement()) {
                     if (event.asEndElement().getName().getLocalPart().equals(FeedModel.FEED_ITEM)) {

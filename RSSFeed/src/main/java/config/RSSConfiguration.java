@@ -34,6 +34,15 @@ public class RSSConfiguration {
     }
 
     /**
+     * Try to convert Atom field into RSS field
+     *
+     * @return unmodifiable list of mandatory channel fields
+     */
+    public static String atomToRSS(String field) {
+        return ImmutableRSSConfig.atomFieldToRSSField(field);
+    }
+
+    /**
      * Get all the mandatory channel fields
      * These fields define 'legality' of channel
      *

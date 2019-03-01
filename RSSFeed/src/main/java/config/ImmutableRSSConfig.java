@@ -1,5 +1,7 @@
 package config;
 
+import model.FeedModel;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,4 +65,28 @@ class ImmutableRSSConfig {
             .stream()
             .map(String::toLowerCase)
             .collect(Collectors.toList());
+
+    static String atomFieldToRSSField(String atomField) {
+        switch (atomField) {
+            case "atom:author": return ITEM_AUTHOR.toLowerCase();
+            case "atom:category": return CHANNEL_CATEGORY.toLowerCase();
+            case "atom:feed": return FeedModel.FEED_CHANNEL.toLowerCase();
+            case "atom:rights": return CHANNEL_COPYRIGHT.toLowerCase();
+            // Ignored by RSS
+            case "atom:subtitle": return "subtitle";
+            case "atom:summary": return CHANNEL_DESCRIPTION.toLowerCase();
+            case "atom:content": return ITEM_DESCRIPTION.toLowerCase();
+            case "atom:generator": return CHANNEL_GENERATOR.toLowerCase();
+            case "atom:id": return  ITEM_GUID.toLowerCase();
+            // Look in specification
+            case "atom:logo": return "image";
+            case "atom:entry": return FeedModel.FEED_ITEM.toLowerCase();
+            case "atom:updated": return CHANNEL_PUB_DATE.toLowerCase();
+            case "atom:link": return CHANNEL_LINK.toLowerCase();
+            case "atom:contributor": return CHANNEL_MANAGING_EDITOR.toLowerCase();
+            case "atom:published": return ITEM_PUB_DATE.toLowerCase();
+            case "atom:title": return CHANNEL_TITLE.toLowerCase();
+            default: return "";
+        }
+    }
 }
