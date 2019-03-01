@@ -67,6 +67,7 @@ class ImmutableRSSConfig {
             .collect(Collectors.toList());
 
     static String atomFieldToRSSField(String atomField) {
+        if (!atomField.startsWith("atom")) return atomField;
         switch (atomField) {
             case "atom:author": return ITEM_AUTHOR.toLowerCase();
             case "atom:category": return CHANNEL_CATEGORY.toLowerCase();

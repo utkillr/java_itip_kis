@@ -35,4 +35,24 @@ public class FeedModelTest {
             assertEquals("dummy " + key, model.itemSources.get(0).get(key));
         }
     }
+
+    @Test
+    @DisplayName("Test to turn Atom into RSS when there is not Atom")
+    public void atomToRssNoAtomTest() {
+        FeedModel model = new FeedModel();
+        model.metaSource.put("title", "dummy title");
+
+        Map<String, String> itemSource = new HashMap<>();
+        itemSource.put("title", "dummy title");
+        model.itemSources.add(itemSource);
+
+        model.atomToRSS();
+
+        assertEquals(1, model.metaSource.size());
+        assertEquals("dummy title", model.metaSource.get("title"));
+        assertEquals(1, model.itemSources.size());
+        assertEquals(1, model.itemSources.get(0).size());
+        assertEquals("dummy title", model.itemSources.get(0).get("title"));
+
+    }
 }
