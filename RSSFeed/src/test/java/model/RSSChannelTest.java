@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class RSSChannelTest {
@@ -143,5 +144,35 @@ public class RSSChannelTest {
 
         RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
         assertEquals(0, channel.getItems().size());
+    }
+
+    @Test
+    @DisplayName("Test RSSChannel limiting RSS Items")
+    public void initRSSChannelTooManyItems() throws InvalidObjectException {
+        FeedModel model = new FeedModel();
+        RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> model.metaSource.put(field, "dummy " + field));
+
+        Map<String, String> itemSource1 = new HashMap<>();
+        RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> itemSource1.put(field, "dummy " + field));
+        itemSource1.put("pubdate", "Tue, 05 May 2016 11:46:11 +0200");
+
+        Map<String, String> itemSource2 = new HashMap<>();
+        RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> itemSource2.put(field, "dummy " + field));
+        itemSource2.put("pubdate", "Tue, 03 May 2016 11:46:11 +0200");
+
+        Map<String, String> itemSource3 = new HashMap<>();
+        RSSConfiguration.getRawMandatoryChannelFields().forEach(field -> itemSource3.put(field, "dummy " + field));
+        itemSource3.put("pubdate", "Tue, 04 May 2016 11:46:11 +0200");
+
+        model.itemSources.add(itemSource1);
+        model.itemSources.add(itemSource2);
+        model.itemSources.add(itemSource3);
+
+        RSSConfiguration.getInstance().setFeedMaxItems("dummy.rss", 2);
+        RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), "dummy.rss", model);
+        assertEquals(2, channel.getItems().size());
+        for (RSSItem item : channel.getItems()) {
+            assertNotEquals(PubDateParser.parse("Tue, 03 May 2016 11:46:11 +0200"), item.getLatestPubDate());
+        }
     }
 }

@@ -46,7 +46,7 @@ public class CommandLineParser {
                         if (params.size() < 2) {
                             throw new IllegalArgumentException("Not enough params for rss add");
                         }
-                        if (params.size() > 2) {
+                        if (params.size() > 3) {
                             throw new IllegalArgumentException("Too many params for rss add");
                         }
                         String rssLink = params.get(0);
@@ -57,6 +57,10 @@ public class CommandLineParser {
                                 "Successfully added new RSS Feed: " + rssLink,
                                 "Associated file is: " + file
                         );
+                        if (params.size() == 3) {
+                            manager.setRSSMaxItems(rssLink, Integer.valueOf(params.get(2)));
+                            manager.prettyPrint("Set maxCount to " + params.get(2));
+                        }
                         break;
                     }
                     // removal
@@ -141,6 +145,22 @@ public class CommandLineParser {
                                 manager.setRssChannelParams(rssLink, params);
                                 manager.prettyPrint("Successfully set Channel Properties to: " + params);
                             }
+                        }
+                        break;
+                    }
+                    // go into max
+                    case "max": {
+                        if (params.size() < 1) {
+                            throw new IllegalArgumentException("Not enough params for rss file");
+                        } else if (params.size() > 2) {
+                            throw new IllegalArgumentException("Too many params for rss file");
+                        }
+                        String rssLink = params.get(0);
+                        // print current max
+                        if (params.size() == 1) {
+                            manager.printRSSMaxItems(rssLink);
+                        } else if (params.size() == 2) {
+                            manager.setRSSMaxItems(rssLink, Integer.valueOf(params.get(1)));
                         }
                         break;
                     }

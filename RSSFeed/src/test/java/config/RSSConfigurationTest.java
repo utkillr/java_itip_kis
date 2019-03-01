@@ -97,6 +97,28 @@ public class RSSConfigurationTest {
     }
 
     @Test
+    @DisplayName("Test ability of changing file")
+    public void changeFileTest() {
+        RSSConfiguration.getInstance().setRSSFeedFile("dummy.rss", "newfile.txt");
+        assertEquals("newfile.txt", RSSConfiguration.getInstance().getRSSFeeds().get("dummy.rss"));
+    }
+
+    @Test
+    @DisplayName("Test ability of changing max items count")
+    public void changeMaxItemsTest() {
+        assertEquals((Integer)RSSConfiguration.defaultMaxItems, RSSConfiguration.getInstance().getFeedMaxItems("dummy.rss"));
+        RSSConfiguration.getInstance().setFeedMaxItems("dummy.rss", 5);
+        assertEquals((Integer)5, RSSConfiguration.getInstance().getFeedMaxItems("dummy.rss"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    @DisplayName("Test ability of changing max items count to throw")
+    public void changeMaxItemsTestThrow() {
+        assertEquals((Integer)RSSConfiguration.defaultMaxItems, RSSConfiguration.getInstance().getFeedMaxItems("dummy.rss"));
+        RSSConfiguration.getInstance().setFeedMaxItems("dummy.rss", -1);
+    }
+
+    @Test
     @DisplayName("Test ability of changing polling time")
     public void changePollTimeTest() {
         RSSConfiguration.getInstance().setTimeToPoll(100L);
@@ -154,6 +176,22 @@ public class RSSConfigurationTest {
         }
         assertTrue(thrown);
 
+        thrown = false;
+        try {
+            RSSConfiguration.getInstance().setRSSFeedFile("newdummy.rss", "newdummy.txt");
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+
+        thrown = false;
+        try {
+            RSSConfiguration.getInstance().setFeedMaxItems("newdummy.rss", null);
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::delRSSFeed, "newdummy.rss"));
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::isRSSFeedOn, "newdummy.rss"));
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::turnOnRSSFeed, "newdummy.rss"));
@@ -161,6 +199,7 @@ public class RSSConfigurationTest {
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getRSSFeedLastPubDate, "newdummy.rss"));
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getChannelFields, "newdummy.rss"));
         assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getItemFields, "newdummy.rss"));
+        assertTrue(getIllegalArgumentException(RSSConfiguration.getInstance()::getFeedMaxItems, "newdummy.rss"));
     }
 
     private boolean getIllegalArgumentException(Consumer<String> method, String arg) {

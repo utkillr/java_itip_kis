@@ -21,6 +21,7 @@ public class AutoRSSConfiguratorTest {
     public void cleanup() {
         List<String> feeds = new ArrayList<>(RSSConfiguration.getInstance().getRSSFeeds().keySet());
         feeds.forEach(RSSConfiguration.getInstance()::delRSSFeed);
+        RSSConfiguration.getInstance().setTimeToPoll(RSSConfiguration.defaultTimeToPoll);
         assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
     }
 
@@ -36,7 +37,6 @@ public class AutoRSSConfiguratorTest {
         InputStream in = RSSConfigurationTest.class.getClassLoader().getResourceAsStream("config" + File.separator + file);
         byte[] bytes = new byte[in.available()];
         in.read(bytes);
-        Path path = f.toPath();
         Files.write(f.toPath(), bytes, APPEND);
     }
 

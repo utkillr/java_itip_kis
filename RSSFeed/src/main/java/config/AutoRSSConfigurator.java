@@ -88,7 +88,6 @@ public class AutoRSSConfigurator {
                             configuration.turnOnRSSFeed(parsed.get(0));
                         }
                         // Set pub date
-                        String lastPubDate = parsed.get(3);
                         try {
                             Date pubDate = new Date(Long.valueOf(parsed.get(3)));
                             configuration.notifyFeedRead(parsed.get(0), pubDate);
