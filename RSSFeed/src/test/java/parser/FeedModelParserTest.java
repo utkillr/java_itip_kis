@@ -26,8 +26,7 @@ public class FeedModelParserTest {
         return model;
     }
 
-    private void assertModelIsRegular(FeedModel receivedModel) {
-        FeedModel expectedModel = getRegularFeedModel();
+    private void assertModelIs(FeedModel receivedModel, FeedModel expectedModel) {
         assertEquals(expectedModel.metaSource.size(), receivedModel.metaSource.size());
         assertEquals(1, expectedModel.itemSources.size());
         assertEquals(1, receivedModel.itemSources.size());
@@ -46,7 +45,7 @@ public class FeedModelParserTest {
         InputStream inputStream = FeedModelParser.class.getClassLoader().getResourceAsStream(file);
 
         FeedModel model = new FeedModelParser().parse(inputStream);
-        assertModelIsRegular(model);
+        assertModelIs(model, getRegularFeedModel());
     }
 
     @Test
@@ -56,7 +55,7 @@ public class FeedModelParserTest {
         InputStream inputStream = FeedModelParser.class.getClassLoader().getResourceAsStream(file);
 
         FeedModel model = new FeedModelParser().parse(inputStream);
-        assertModelIsRegular(model);
+        assertModelIs(model, getRegularFeedModel());
     }
 
     @Test
@@ -66,7 +65,7 @@ public class FeedModelParserTest {
         InputStream inputStream = FeedModelParser.class.getClassLoader().getResourceAsStream(file);
 
         FeedModel model = new FeedModelParser().parse(inputStream);
-        assertModelIsRegular(model);
+        assertModelIs(model, getRegularFeedModel());
     }
 
     @Test
@@ -87,7 +86,7 @@ public class FeedModelParserTest {
         InputStream inputStream = FeedModelParser.class.getClassLoader().getResourceAsStream(file);
 
         FeedModel model = new FeedModelParser().parse(inputStream);
-        assertModelIsRegular(model);
+        assertModelIs(model, getRegularFeedModel());
     }
 
     @Test
@@ -97,7 +96,7 @@ public class FeedModelParserTest {
         InputStream inputStream = FeedModelParser.class.getClassLoader().getResourceAsStream(file);
 
         FeedModel model = new FeedModelParser().parse(inputStream);
-        assertModelIsRegular(model);
+        assertModelIs(model, getRegularFeedModel());
     }
 
     @Test
@@ -107,7 +106,7 @@ public class FeedModelParserTest {
         InputStream inputStream = FeedModelParser.class.getClassLoader().getResourceAsStream(file);
 
         FeedModel model = new FeedModelParser().parse(inputStream);
-        assertModelIsRegular(model);
+        assertModelIs(model, getRegularFeedModel());
     }
 
     @Test
@@ -119,5 +118,24 @@ public class FeedModelParserTest {
 
         assertTrue(model.metaSource.isEmpty());
         assertTrue(model.itemSources.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Test for Atom RSS Feed parsing")
+    public void parseAtomRSSFeedTest() {
+        String file = "parser" + File.separator + "atomRss.xml";
+        InputStream inputStream = FeedModelParser.class.getClassLoader().getResourceAsStream(file);
+
+        FeedModel expectedModel = new FeedModel();
+        expectedModel.metaSource.put("atom:title", "CHANNEL NAME");
+        expectedModel.metaSource.put("atom:summary", "CHANNEL DESCRIPTION");
+        Map<String, String> source = new HashMap<>();
+        source.put("atom:title", "NAME");
+        source.put("atom:content", "DESCRIPTION");
+        source.put("atom:published", "DATE");
+        expectedModel.itemSources.add(source);
+
+        FeedModel model = new FeedModelParser().parse(inputStream);
+        assertModelIs(model, expectedModel);
     }
 }

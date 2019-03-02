@@ -1,5 +1,6 @@
 package parser;
 
+import javafx.util.Pair;
 import model.FeedModel;
 import util.Log;
 import util.XMLEventCharactersReader;
@@ -7,6 +8,7 @@ import util.XMLEventCharactersReader;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
+import java.util.Map;
 
 /**
  * This class implements parsing for channel properties and items
@@ -27,7 +29,10 @@ class RSSChannelParser {
      */
     FeedModel parse(XMLEvent event, XMLEventReader eventReader) throws IllegalAccessException {
         FeedModel model = new FeedModel();
-        if (!(event.isStartElement() && event.asStartElement().getName().getLocalPart().equals(FeedModel.FEED_CHANNEL))) {
+        if (!(event.isStartElement() && (
+                event.asStartElement().getName().getLocalPart().equals(FeedModel.FEED_CHANNEL)
+                        || event.asStartElement().getName().getLocalPart().equals(FeedModel.ATOM_CHANNEL)
+        ))) {
             throw new IllegalAccessException("Not an <channel> tag");
         }
         try {
@@ -35,18 +40,19 @@ class RSSChannelParser {
                 event = eventReader.nextEvent();
                 if (event.isStartElement()) {
                     String prefix = event.asStartElement().getName().getPrefix();
-                    if (prefix.equals("atom")) {
-                        // ignore atom fields for now
-                        continue;
-                    }
                     String localPart = event.asStartElement().getName().getLocalPart();
                     // in case of it is <item>
-                    if (localPart.equals(FeedModel.FEED_ITEM)) {
+                    if (localPart.equals(FeedModel.FEED_ITEM) || localPart.equals(FeedModel.ATOM_ITEM)) {
                         try {
                             model.itemSources.add(new RSSItemParser().parse(event, eventReader));
                         } catch (IllegalAccessException e) {
                             log.error(e.getMessage());
                         }
+                    } else if (prefix.equals("atom")) {
+                        model.metaSource.put(
+                                (prefix + ":" + localPart).toLowerCase(),
+                                new AtomEventParser().parse(event, eventReader)
+                        );
                     } else {
                         try {
                             model.metaSource.put(

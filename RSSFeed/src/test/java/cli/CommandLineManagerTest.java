@@ -112,6 +112,21 @@ public class CommandLineManagerTest {
     }
 
     @Test
+    @DisplayName("Test to setup different Items max count")
+    public void setRssMaxCountTest() {
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+        String link = "dummy.rss";
+        String file = "dummy.txt";
+        manager.associateRssToFile(link, file);
+
+        manager.setRSSMaxItems("dummy.rss", 5);
+        assertEquals((Integer)5, RSSConfiguration.getInstance().getFeedMaxItems("dummy.rss"));
+
+        manager.dissociateRss(link);
+        assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
+    }
+
+    @Test
     @DisplayName("Test to setup different channel params")
     public void setRssChannelParamsTest() {
         assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());
@@ -172,6 +187,7 @@ public class CommandLineManagerTest {
         manager.printAvailableRssChannelParams();
         manager.printRssItemParams("dummy.rss");
         manager.printRssChannelParams("dummy.rss");
+        manager.printRSSMaxItems("dummy.rss");
 
         manager.dissociateRss(link);
         assertTrue(RSSConfiguration.getInstance().getRSSFeeds().isEmpty());

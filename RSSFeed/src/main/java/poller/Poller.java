@@ -73,6 +73,8 @@ public class Poller implements Runnable {
     Date handleRSSFeed(InputStream in, String link, String file) {
         try {
             FeedModel model = new FeedModelParser().parse(in);
+            // TODO: model.atomToRSS();
+            model.atomToRSS();
             Path path = Paths.get(file);
             RSSChannel channel = new RSSChannel(RSSConfiguration.getInstance(), link, model);
             printRSSFeedToFile(channel, link, path);

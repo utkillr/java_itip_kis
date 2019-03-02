@@ -177,4 +177,36 @@ public class RSSChannelParserTest {
         assertTrue(model.itemSources.isEmpty());
         eventReader.close();
     }
+
+    @Test
+    @DisplayName("Test for RSSChannel with Atom parsing")
+    public void parseAtomRSSChannelTest() throws XMLStreamException, IllegalAccessException {
+        String file = "parser" + File.separator + "channelWithAtomFields.xml";
+        InputStream inputStream = RSSChannelParserTest.class.getClassLoader().getResourceAsStream(file);
+
+        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        XMLEventReader eventReader = inputFactory.createXMLEventReader(inputStream);
+        // Skip first <xml> event
+        eventReader.nextEvent();
+
+        XMLEvent event = eventReader.nextEvent();
+
+        FeedModel expectedModel  = new FeedModel();
+        expectedModel.metaSource.put("atom:title", "NAME");
+        expectedModel.metaSource.put("atom:link", "self : http://atom.href");
+        Map<String, String> source = new HashMap<>();
+        source.put("title", "NAME");
+        source.put("description", "DESCRIPTION");
+        source.put("pubdate", "DATE");
+        expectedModel.itemSources.add(source);
+        FeedModel model = new RSSChannelParser().parse(event, eventReader);
+
+        assertEquals(expectedModel.metaSource.size(), model.metaSource.size());
+        for (String key : expectedModel.metaSource.keySet()) {
+            assertEquals(expectedModel.metaSource.get(key), model.metaSource.get(key));
+        }
+        assertEquals(expectedModel.itemSources.size(), model.itemSources.size());
+
+        eventReader.close();
+    }
 }

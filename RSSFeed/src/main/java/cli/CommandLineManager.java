@@ -27,8 +27,8 @@ class CommandLineManager {
                     "rss:\n\t\t" +
                         "(w/o params):\n\t\t\t" +
                             "Get list of RSS Feeds and associated files\n\t\t" +
-                        "add <rss link> <file>:\n\t\t\t" +
-                            "Link RSS Feed to the file.\n\t\t\t" +
+                        "add <rss link> <file> OR add <rss link> <file> <count>:\n\t\t\t" +
+                            "Link RSS Feed to the file. If count is provided, set max items count per poll\n\t\t\t" +
                             "If file exists or is a directory, error is raised\n\t\t" +
                         "del <rss link> ... :\n\t\t\t" +
                             "Delete RSS Feeds and associated files\n\t\t" +
@@ -49,7 +49,12 @@ class CommandLineManager {
                             "<rss link>:\n\t\t\t\t" +
                                 "Get list of item fields configured for RSS Feed\n\t\t\t" +
                             "<rss link> <property_1> ... <property_n>:\n\t\t\t\t" +
-                                "Configure list of item fields for RSS Feed\n\t" +
+                                "Configure list of item fields for RSS Feed\n\t\t" +
+                        "max:\n\t\t\t" +
+                            "<rss link>:\n\t\t\t\t" +
+                                "Get max count of items per poll for RSS Feed\n\t\t\t" +
+                            "<rss link> <count>:\n\t\t\t\t" +
+                                "Set max count of items per poll for RSS Feed\n\t" +
                     "time:\n\t\t" +
                         "(w/o params):\n\t\t\t" +
                             "Get current time to poll in seconds\n\t\t" +
@@ -117,7 +122,6 @@ class CommandLineManager {
         System.out.println("Associated file: " + RSSConfiguration.getInstance().getRSSFeeds().get(link));
     }
 
-
     /**
      * Turn RSS feed On
      *
@@ -134,6 +138,20 @@ class CommandLineManager {
      */
     void turnRSSOff(String link) {
         RSSConfiguration.getInstance().turnOffRSSFeed(link);
+    }
+
+      /**
+       * Set RSS feed max items
+       *
+       * @param link rss feed link
+       * @param maxItems new max count of items
+       */
+    void setRSSMaxItems(String link, Integer maxItems) {
+        RSSConfiguration.getInstance().setFeedMaxItems(link, maxItems);
+    }
+
+    void printRSSMaxItems(String link) {
+        System.out.println("Configured max items count:\n" + RSSConfiguration.getInstance().getFeedMaxItems(link));
     }
 
     /**

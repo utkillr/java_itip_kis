@@ -24,9 +24,11 @@ public class CommandLineParserTest {
         Mockito.doNothing().when(clm).turnRSSOff("newdummy.rss");
         Mockito.doNothing().when(clm).setRssChannelParams(Mockito.eq("dummy.rss"), Mockito.anyListOf(String.class));
         Mockito.doNothing().when(clm).setRssItemParams(Mockito.eq("dummy.rss"), Mockito.anyListOf(String.class));
+        Mockito.doNothing().when(clm).setRSSMaxItems(Mockito.eq("dummy.rss"), Mockito.anyInt());
 
         Mockito.doNothing().when(clm).printRssFile("dummy.rss");
         Mockito.doNothing().when(clm).printRssFile("newdummy.rss");
+        Mockito.doNothing().when(clm).printRSSMaxItems("dummy.rss");
         Mockito.doNothing().when(clm).printRssChannelParams("dummy.rss");
         Mockito.doNothing().when(clm).printAvailableRssChannelParams();
         Mockito.doNothing().when(clm).printRssItemParams("dummy.rss");
@@ -48,14 +50,32 @@ public class CommandLineParserTest {
         parser.parse(cmd);
         Mockito.verify(clm, Mockito.times(1)).createFileIfNotExists("dummy.txt");
         Mockito.verify(clm, Mockito.times(1)).associateRssToFile("dummy.rss", "dummy.txt");
+        Mockito.verify(clm, Mockito.times(0)).setRSSMaxItems("dummy.rss", 100);
         Mockito.verify(clm, Mockito.never()).dissociateRss("dummy.rss");
         Mockito.verify(clm, Mockito.never()).reassociateRssToFile("dummy.rss", "dummy.txt");
+
+        cmd = "rss add dummy.rss dummy.txt 100";
+        parser.parse(cmd);
+        Mockito.verify(clm, Mockito.times(2)).createFileIfNotExists("dummy.txt");
+        Mockito.verify(clm, Mockito.times(2)).associateRssToFile("dummy.rss", "dummy.txt");
+        Mockito.verify(clm, Mockito.times(1)).setRSSMaxItems("dummy.rss", 100);
+        Mockito.verify(clm, Mockito.never()).dissociateRss("dummy.rss");
+        Mockito.verify(clm, Mockito.never()).reassociateRssToFile("dummy.rss", "dummy.txt");
+
+        cmd = "rss add dummy.rss dummy.txt 100 dummy";
+        try {
+            parser.parse(cmd);
+            thrown = false;
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
 
         cmd = "rss add dummy.rss dummy.txt dummy";
         try {
             parser.parse(cmd);
             thrown = false;
-        } catch (IllegalArgumentException e) {
+        } catch (NumberFormatException e) {
             thrown = true;
         }
         assertTrue(thrown);
@@ -69,7 +89,7 @@ public class CommandLineParserTest {
         }
         assertTrue(thrown);
 
-        cmd = "rss add dummy.rss";
+        cmd = "rss add";
         try {
             parser.parse(cmd);
             thrown = false;
@@ -248,6 +268,50 @@ public class CommandLineParserTest {
         Mockito.verify(clm, Mockito.times(1)).setRssItemParams("dummy.rss", params);
         Mockito.verify(clm, Mockito.times(1)).printAvailableRssItemParams();
         Mockito.verify(clm, Mockito.times(1)).printRssItemParams("dummy.rss");
+    }
+
+    @Test
+    @DisplayName("Test to parse max commands")
+    public void parseMaxTest() {
+        CommandLineManager clm = getMock();
+        CommandLineParser parser = new CommandLineParser(clm);
+        boolean thrown;
+
+        String cmd = "rss max dummy.rss 100";
+        parser.parse(cmd);
+        Mockito.verify(clm, Mockito.times(1)).setRSSMaxItems("dummy.rss", 100);
+
+        cmd = "rss max dummy.rss 100 dummy";
+        try {
+            parser.parse(cmd);
+            thrown = false;
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+
+        cmd = "rss max dummy.rss dummy";
+        try {
+            parser.parse(cmd);
+            thrown = false;
+        } catch (NumberFormatException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+
+        cmd = "rss max dummy.rss";
+        parser.parse(cmd);
+        Mockito.verify(clm, Mockito.times(1)).setRSSMaxItems("dummy.rss", 100);
+        Mockito.verify(clm, Mockito.times(1)).printRSSMaxItems("dummy.rss");
+
+        cmd = "rss max";
+        try {
+            parser.parse(cmd);
+            thrown = false;
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
     }
 
     @Test

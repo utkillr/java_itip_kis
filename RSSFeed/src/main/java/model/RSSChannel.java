@@ -73,20 +73,19 @@ public class RSSChannel {
         this.items = new ArrayList<>();
         for (Map<String, String> item : model.itemSources) {
             items.add(new RSSItem(configuration, feed, item));
-            if (latestPubDate != null) {
-                items = items
-                        .stream()
-                        .filter(i ->
-                                i.getLatestPubDate() == null || i.getLatestPubDate().compareTo(latestPubDate) > 0
-                        )
-                        .collect(Collectors.toList());
-            }
         }
+
+        items = items
+                .stream()
+                .filter(i -> i.getLatestPubDate().compareTo(latestPubDate == null ? new Date(0) : latestPubDate) > 0)
+                .sorted(Comparator.comparing(RSSItem::getLatestPubDate, Comparator.reverseOrder()))
+                .limit(configuration.getFeedMaxItems(feed))
+                .collect(Collectors.toList());
 
         this.latestPubDate = items
                 .stream()
                 .map(RSSItem::getLatestPubDate)
-                .min((d1, d2) -> -d1.compareTo(d2))
+                .max(Comparator.naturalOrder())
                 .orElse(this.latestPubDate);
     }
 }

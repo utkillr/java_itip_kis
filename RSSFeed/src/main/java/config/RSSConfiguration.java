@@ -14,13 +14,15 @@ public class RSSConfiguration {
      */
     private static final RSSConfiguration configuration = new RSSConfiguration();
 
-    static long defaultTimeToPoll = 60L;
+    final static long defaultTimeToPoll = 60L;
+    final static int defaultMaxItems = 10;
 
     private long timeToPoll;
     private Map<String, String> RSSFeeds;
     private Map<String, LocalFeedInfo> RSSFeedStatus;
     private Map<String, List<String>> RSSFeedChannelFields;
     private Map<String, List<String>> RSSFeedItemFields;
+    private Map<String, Integer> RSSFeedMaxItems;
 
     private RSSConfiguration() {
         RSSFeedChannelFields = new HashMap<>();
@@ -28,10 +30,21 @@ public class RSSConfiguration {
         timeToPoll = defaultTimeToPoll;
         RSSFeeds = new HashMap<>();
         RSSFeedStatus = new HashMap<>();
+        RSSFeedMaxItems = new HashMap<>();
+    }
+
+    /**
+     * Try to convert Atom field into RSS field
+     *
+     * @return unmodifiable list of mandatory channel fields
+     */
+    public static String atomToRSS(String field) {
+        return ImmutableRSSConfig.atomFieldToRSSField(field);
     }
 
     /**
      * Get all the mandatory channel fields
+     * These fields define 'legality' of channel
      *
      * @return unmodifiable list of mandatory channel fields
      */
@@ -41,6 +54,7 @@ public class RSSConfiguration {
 
     /**
      * Get all the mandatory item fields
+     * These fields define 'legality' of item
      *
      * @return unmodifiable list of mandatory item fields
      */
@@ -64,6 +78,15 @@ public class RSSConfiguration {
      */
     public static List<String> getAvailableItemFields() {
         return Collections.unmodifiableList(ImmutableRSSConfig.availableItemFields);
+    }
+
+    /**
+     * Get singleton configuration instance
+     *
+     * @return configuration instance
+     */
+    public static RSSConfiguration getInstance() {
+        return configuration;
     }
 
     /**
@@ -94,17 +117,47 @@ public class RSSConfiguration {
         }
     }
 
-    public void setRSSFeedFile(String feed, String file) {
-        RSSFeeds.replace(feed, file);
+    /**
+     * Get configured max count of items to read per poll
+     *
+     * @param feed Feed to get configured count
+     * @return max count of items which can be read from RSS Feed
+     */
+    public Integer getFeedMaxItems(String feed) {
+        if (RSSFeeds.containsKey(feed)) {
+            return RSSFeedMaxItems.get(feed);
+        } else {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
+        }
     }
 
     /**
-     * Get singleton configuration instance
+     * Set max count of items to read per poll for feed
      *
-     * @return configuration instance
+     * @param feed Feed to set count
+     * @param count max count of items which can be read from RSS Feed
      */
-    public static RSSConfiguration getInstance() {
-        return configuration;
+    public void setFeedMaxItems(String feed, Integer count) {
+        if (RSSFeeds.containsKey(feed)) {
+            if (count > 0) RSSFeedMaxItems.replace(feed, count);
+            else throw new IllegalArgumentException("Count should be greater than 0");
+        } else {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
+        }
+    }
+
+    /**
+     * Set new output file to write from RSS Feed
+     *
+     * @param feed link to feed
+     * @param file new file path
+     */
+    public void setRSSFeedFile(String feed, String file) {
+        if (RSSFeeds.containsKey(feed)) {
+            RSSFeeds.replace(feed, file);
+        } else {
+            throw new InvalidParameterException("Feed " + feed + " is not added");
+        }
     }
 
     /**
@@ -175,6 +228,7 @@ public class RSSConfiguration {
             RSSFeedStatus.put(feed, new LocalFeedInfo());
             RSSFeedChannelFields.put(feed, new ArrayList<>(ImmutableRSSConfig.defaultRawAvailableChannelFields));
             RSSFeedItemFields.put(feed, new ArrayList<>(ImmutableRSSConfig.defaultRawAvailableItemFields));
+            RSSFeedMaxItems.put(feed, defaultMaxItems);
         } else {
             throw new InvalidParameterException("Feed " + feed + " is already added");
         }

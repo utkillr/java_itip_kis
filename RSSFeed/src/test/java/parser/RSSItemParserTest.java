@@ -110,4 +110,31 @@ public class RSSItemParserTest {
         assertTrue(model.isEmpty());
         eventReader.close();
     }
+
+    @Test
+    @DisplayName("Test for Atom RSSItem is parsed")
+    public void parseAtomRSSItemTest() throws XMLStreamException, IllegalAccessException {
+        String file = "parser" + File.separator + "itemWithAtomFields.xml";
+        InputStream inputStream = RSSItemParserTest.class.getClassLoader().getResourceAsStream(file);
+
+        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        XMLEventReader eventReader = inputFactory.createXMLEventReader(inputStream);
+        // Skip first <xml> event
+        eventReader.nextEvent();
+
+        XMLEvent event = eventReader.nextEvent();
+
+        Map<String, String> expectedModel = new HashMap<>();
+        expectedModel.put("atom:title", "NAME");
+        expectedModel.put("atom:link", "self : http://atom.href");
+        Map<String, String> model = new RSSItemParser().parse(event, eventReader);
+
+        assertEquals(expectedModel.size(), model.size());
+        for (String key : expectedModel.keySet()) {
+            assertEquals(expectedModel.get(key), model.get(key));
+        }
+
+        eventReader.close();
+    }
+
 }

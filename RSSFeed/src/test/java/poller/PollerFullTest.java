@@ -1,24 +1,19 @@
 package poller;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import config.RSSConfiguration;
-import model.RSSChannel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
-import util.PubDateParser;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
@@ -133,5 +128,50 @@ public class PollerFullTest {
         assertEquals(readFromResource(resourceTXT), readFromFile());
 
         RSSConfiguration.getInstance().delRSSFeed("dummy.rss");
+    }
+
+    @Test
+    @DisplayName("Test that Poller can do the poll fine with Atom")
+    public void pollerAtomFullSanityCheck() throws IOException {
+        Poller poller = new Poller();
+
+        String resourceXML = "poller" + File.separator + "atomRss.xml";
+        String resourceTXT = "poller" + File.separator + "regularRss.txt";
+        stubFor(
+                get(
+                        urlEqualTo("/dummy.rss")
+                ).willReturn(
+                        aResponse()
+                                .withBody(readFromResource(resourceXML))
+                )
+        );
+        poller.poll(RSSConfiguration.getInstance());
+        assertEquals(readFromResource(resourceTXT), readFromFile());
+
+        resourceXML = "poller" + File.separator + "secondAtomRss.xml";
+        resourceTXT = "poller" + File.separator + "secondRegularRss.txt";
+        stubFor(
+                get(
+                        urlEqualTo("/dummy.rss")
+                ).willReturn(
+                        aResponse()
+                                .withBody(readFromResource(resourceXML))
+                )
+        );
+        poller.poll(RSSConfiguration.getInstance());
+        assertEquals(readFromResource(resourceTXT), readFromFile());
+
+        resourceXML = "poller" + File.separator + "atomRss.xml";
+        resourceTXT = "poller" + File.separator + "secondRegularRss.txt";
+        stubFor(
+                get(
+                        urlEqualTo("/dummy.rss")
+                ).willReturn(
+                        aResponse()
+                                .withBody(readFromResource(resourceXML))
+                )
+        );
+        poller.poll(RSSConfiguration.getInstance());
+        assertEquals(readFromResource(resourceTXT), readFromFile());
     }
 }
