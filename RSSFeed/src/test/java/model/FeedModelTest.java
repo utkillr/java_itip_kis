@@ -53,6 +53,26 @@ public class FeedModelTest {
         assertEquals(1, model.itemSources.size());
         assertEquals(1, model.itemSources.get(0).size());
         assertEquals("dummy title", model.itemSources.get(0).get("title"));
+    }
 
+    @Test
+    @DisplayName("Test to turn Atom into RSS when there are both Atom and RSS fields")
+    public void atomToRssAtomAndRssTest() {
+        FeedModel model = new FeedModel();
+        model.metaSource.put("title", "dummy title");
+        model.metaSource.put("atom:title", "dummy atom title");
+
+        Map<String, String> itemSource = new HashMap<>();
+        itemSource.put("atom:rights", "dummy atom rights");
+        itemSource.put("copyright", "dummy copyright");
+        model.itemSources.add(itemSource);
+
+        model.atomToRSS();
+
+        assertEquals(1, model.metaSource.size());
+        assertEquals("dummy title", model.metaSource.get("title"));
+        assertEquals(1, model.itemSources.size());
+        assertEquals(1, model.itemSources.get(0).size());
+        assertEquals("dummy copyright", model.itemSources.get(0).get("copyright"));
     }
 }
